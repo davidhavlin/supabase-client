@@ -12,6 +12,6 @@
   height: 100vh;
 }
 body {
-  background: aquamarine;
+  background: #3b81f6;
 }
 </style>

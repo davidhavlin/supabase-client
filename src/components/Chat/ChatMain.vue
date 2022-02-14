@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-red mt-auto p-3">
+  <div class="mt-auto p-3">
     <chat-message
       v-for="message in chatMessages"
       :key="`chat-message-${message.id}`"
@@ -10,8 +10,10 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
-import { useStore } from '../../store'
+import { computed, defineComponent, onMounted } from 'vue'
+// import { supabase } from '../../plugins/supabase'
+import { Action, useStore } from '../../store'
+import { IMessage } from '../../store/state'
 import ChatMessage from './elements/ChatMessage.vue'
 
 const colors = [
@@ -43,6 +45,18 @@ export default defineComponent({
     }
 
     const chatMessages = computed(() => store.state.chatMessages)
+
+    const fetchMessages = () => {
+      store.dispatch(Action.fetchMessages)
+    }
+    const messageReceived = (msg: IMessage) => {
+      console.log('Log z komponentu', { msg })
+    }
+
+    onMounted(() => {
+      fetchMessages()
+      store.dispatch(Action.listenForInserts, messageReceived)
+    })
 
     return {
       chatMessages,
