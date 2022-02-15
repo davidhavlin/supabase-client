@@ -22,16 +22,5 @@ export const state: State = {
   version: versionString,
   isInitialized: false,
   count: 0,
-  chatMessages: [
-    {
-      id: 0,
-      username: 'skuska',
-      content: 'helloo world',
-    },
-    {
-      id: 1,
-      username: 'skuska2',
-      content: 'helloo world a blalblal blalba',
-    },
-  ],
+  chatMessages: [],
 }

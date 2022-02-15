@@ -1,16 +1,18 @@
 <template>
-  <div class="mt-auto p-3">
+  <div ref="chatContainerRef" class="mt-auto p-3">
     <chat-message
+      ref="msgRefs"
       v-for="message in chatMessages"
       :key="`chat-message-${message.id}`"
       :message="message"
       :colorClass="randomColor()"
+      @click="test"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 // import { supabase } from '../../plugins/supabase'
 import { Action, useStore } from '../../store'
 import { IMessage } from '../../store/state'
@@ -38,6 +40,7 @@ export default defineComponent({
   components: { ChatMessage },
   setup() {
     const store = useStore()
+    const chatContainerRef = ref<HTMLElement | null>(null)
 
     const randomColor = () => {
       const randomIndex = Math.floor(Math.random() * colors.length)
@@ -47,7 +50,11 @@ export default defineComponent({
     const chatMessages = computed(() => store.state.chatMessages)
 
     const fetchMessages = () => {
+      if (store.state.chatMessages.length > 0) return
       store.dispatch(Action.fetchMessages)
+    }
+    const test = () => {
+      console.log({ chatContainerRef: chatContainerRef.value?.children })
     }
     const messageReceived = (msg: IMessage) => {
       console.log('Log z komponentu', { msg })
@@ -61,6 +68,8 @@ export default defineComponent({
     return {
       chatMessages,
       randomColor,
+      chatContainerRef,
+      test,
     }
   },
 })
