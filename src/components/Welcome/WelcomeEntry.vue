@@ -29,8 +29,9 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Mutation, useStore } from '../../store'
-import { IUser } from '../../store/state'
+import { useStore } from '../../store'
+import { UserMutation } from '../../store/module-user/mutations'
+import { IUser } from '../../store/module-user/state'
 
 const STORAGE_KEY = 'chat-user'
 
@@ -41,7 +42,7 @@ export default defineComponent({
     const router = useRouter()
     const username = ref('')
 
-    const user = computed(() => store.state.user)
+    const user = computed(() => store.state.user.user)
 
     const onEntry = () => {
       if (!username.value) return
@@ -52,7 +53,7 @@ export default defineComponent({
             colorClass: '',
             icons: [],
           }
-      store.commit(Mutation.SET_USER, newUser)
+      store.commit(UserMutation.SET_USER, newUser)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
 
       router.push({ name: 'PageChat' })
@@ -62,7 +63,7 @@ export default defineComponent({
       const savedUser = localStorage.getItem(STORAGE_KEY)
       if (savedUser) {
         let user: IUser = JSON.parse(savedUser)
-        store.commit(Mutation.SET_USER, user)
+        store.commit(UserMutation.SET_USER, user)
         username.value = user.username
       }
     })

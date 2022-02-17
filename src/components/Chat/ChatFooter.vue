@@ -44,9 +44,9 @@ import IconChat from '../../assets/icons/IconChat.vue'
 import IconOptions from '../../assets/icons/IconOptions.vue'
 import IconUsers from '../../assets/icons/IconUsers.vue'
 import { useStore } from '../../store'
-import { Mutation } from '../../store/mutations'
 import ChatSettings from './elements/ChatSettings.vue'
 import ChatInput from './elements/ChatInput.vue'
+import { MessageMutation } from '../../store/module-messages/mutations'
 
 export default defineComponent({
   name: 'ChatFooter',
@@ -63,7 +63,7 @@ export default defineComponent({
         username: 'test',
       }
       if (!message.value) return
-      store.commit(Mutation.ADD_MESSAGE, newMessage)
+      store.commit(MessageMutation.ADD_MESSAGE, newMessage)
       message.value = ''
     }
 

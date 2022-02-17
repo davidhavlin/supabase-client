@@ -1,50 +1,28 @@
-/* eslint-disable @typescript-eslint/no-extra-semi */
-import { InjectionKey } from "vue";
-import {
-  createStore,
-  Store as VuexStore,
-  CommitOptions,
-  DispatchOptions,
-} from "vuex";
+import { InjectionKey } from 'vue'
+import { createStore } from 'vuex'
 
-import { mutations, Mutations, Mutation } from "./mutations";
-import { actions, Actions, Action } from "./actions";
-import { getters, Getters } from "./getters";
-import { state } from "./state";
-import type { State } from "./state";
+import { IUserState } from './module-user/state'
+import user, { UserStore } from './module-user'
+import { IMessagesState } from './module-messages/state'
+import messages, { MessagesStore } from './module-messages'
 
-export const key: InjectionKey<VuexStore<State>> = Symbol();
+// export const key: InjectionKey<VuexStore<StateInterface>> = Symbol()
 
-export const store = createStore({
-  state,
-  getters,
-  mutations,
-  actions,
-});
-
-export type Store = Omit<
-  VuexStore<State>,
-  "getters" | "commit" | "dispatch"
-> & {
-  commit<K extends keyof Mutations, P extends Parameters<Mutations[K]>[1]>(
-    key: K,
-    payload: P,
-    options?: CommitOptions
-  ): ReturnType<Mutations[K]>;
-} & {
-  dispatch<K extends keyof Actions>(
-    key: K,
-    payload?: Parameters<Actions[K]>[1],
-    options?: DispatchOptions
-  ): ReturnType<Actions[K]>;
-} & {
-  getters: {
-    [K in keyof Getters]: ReturnType<Getters[K]>;
-  };
-};
-
-export function useStore(): Store {
-  return store as Store;
+export type StateInterface = {
+  user: IUserState
+  messages: IMessagesState
 }
 
-export { State, Mutation, Action };
+export type Store = UserStore<Pick<StateInterface, 'user'>> &
+  MessagesStore<Pick<StateInterface, 'messages'>>
+
+export const store = createStore<StateInterface>({
+  modules: {
+    user,
+    messages,
+  },
+})
+
+export function useStore(): Store {
+  return store as Store
+}

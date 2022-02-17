@@ -14,8 +14,9 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue'
 // import { supabase } from '../../plugins/supabase'
-import { Action, useStore } from '../../store'
-import { IMessage } from '../../store/state'
+import { useStore } from '../../store'
+import { MessageAction } from '../../store/module-messages/actions'
+import { IMessage } from '../../store/module-messages/state'
 import ChatMessage from './elements/ChatMessage.vue'
 
 const colors = [
@@ -47,11 +48,11 @@ export default defineComponent({
       return colors[randomIndex]
     }
 
-    const chatMessages = computed(() => store.state.chatMessages)
+    const chatMessages = computed(() => store.state.messages.chatMessages)
 
     const fetchMessages = () => {
-      if (store.state.chatMessages.length > 0) return
-      store.dispatch(Action.fetchMessages)
+      if (chatMessages.value.length > 0) return
+      store.dispatch(MessageAction.fetchMessages)
     }
     const test = () => {
       console.log({ chatContainerRef: chatContainerRef.value?.children })
@@ -62,7 +63,7 @@ export default defineComponent({
 
     onMounted(() => {
       fetchMessages()
-      store.dispatch(Action.listenForInserts, messageReceived)
+      store.dispatch(MessageAction.listenForInserts, messageReceived)
     })
 
     return {
