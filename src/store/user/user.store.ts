@@ -1,10 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
+import { IUser, IUserState } from './user.types'
 
 export const useUserStore = defineStore({
   id: 'user',
-  state: () => ({
+  state: (): IUserState => ({
     user: null,
-    isAdmin: true,
   }),
 
   actions: {
@@ -17,6 +17,7 @@ export const useUserStore = defineStore({
 
     async setUser(user: IUser) {
       console.log('set user')
+      this.user = user
     },
   },
 })
