@@ -2,7 +2,7 @@
   <div class="w-full max-w-sm p-6 bg-white rounded-md shadow-md dark:bg-gray-800">
     <div class="flex flex-row items-center justify-center">
       <h1 class="text-3xl font-semibold text-center text-gray-700 dark:text-white">Čatuj</h1>
-      <AnnotationIcon class="w-16 text-indigo-500" />
+      <AnnotationIcon class="w-16 text-primary-def" />
     </div>
 
     <div class="flex items-center mt-6 -mx-2">

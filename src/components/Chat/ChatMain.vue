@@ -5,7 +5,7 @@
       v-for="message in chatMessages"
       :key="`chat-message-${message.id}`"
       :message="message"
-      :colorClass="randomColor()"
+      :colorClass="message.color ? `text-${message.color}` : 'text-red-500'"
       @click="test"
     />
   </div>
@@ -14,9 +14,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue'
 // import { supabase } from '../../plugins/supabase'
-import { useStore } from '../../store'
-import { MessageAction } from '../../store/module-messages/actions'
-import { IMessage } from '../../store/module-messages/state'
+import { useMessagesStore } from '../../store/message/message.store'
+import { IMessage } from '../../store/message/message.types'
 import ChatMessage from './elements/ChatMessage.vue'
 
 const colors = [
@@ -31,7 +30,7 @@ const colors = [
   'text-cyan-500',
   'text-sky-500',
   'text-blue-500',
-  'text-indigo-500',
+  'text-primary-def',
   'text-fuchsia-500',
   'text-pink-500',
 ]
@@ -40,7 +39,7 @@ export default defineComponent({
   name: 'ChatMain',
   components: { ChatMessage },
   setup() {
-    const store = useStore()
+    const store = useMessagesStore()
     const chatContainerRef = ref<HTMLElement | null>(null)
 
     const randomColor = () => {
@@ -48,22 +47,22 @@ export default defineComponent({
       return colors[randomIndex]
     }
 
-    const chatMessages = computed(() => store.state.messages.chatMessages)
+    const chatMessages = computed(() => store.chatMessages)
 
     const fetchMessages = () => {
       if (chatMessages.value.length > 0) return
-      store.dispatch(MessageAction.fetchMessages)
+      store.fetchMessages()
     }
     const test = () => {
       console.log({ chatContainerRef: chatContainerRef.value?.children })
     }
-    const messageReceived = (msg: IMessage) => {
+    const messageReceived = (msg: IMessage): void => {
       console.log('Log z komponentu', { msg })
     }
 
     onMounted(() => {
       fetchMessages()
-      store.dispatch(MessageAction.listenForInserts, messageReceived)
+      store.listenForInserts(messageReceived)
     })
 
     return {

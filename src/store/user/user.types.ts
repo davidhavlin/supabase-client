@@ -4,6 +4,6 @@ export interface IUserState {
 
 export interface IUser {
   username: string
-  colorClass: string
+  color: string
   icons: string[]
 }

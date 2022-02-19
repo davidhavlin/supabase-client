@@ -3,7 +3,8 @@ export interface IMessagesState {
 }
 
 export interface IMessage {
-  id: number
+  id?: number
   content: string
   username: string
+  color: string
 }

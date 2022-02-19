@@ -8,16 +8,9 @@ export const useUserStore = defineStore({
   }),
 
   actions: {
-    logout() {
-      // this.$patch({
-      //   name: '',
-      //   isAdmin: false,
-      // })
-    },
-
     async setUser(user: IUser) {
-      console.log('set user')
       this.user = user
+      return user
     },
   },
 })

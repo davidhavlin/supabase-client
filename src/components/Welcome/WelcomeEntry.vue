@@ -17,7 +17,7 @@
         </div>
         <button
           @click="onEntry"
-          class="inline-flex items-center ml-3 justify-center cursor-pointer px-4 py-2 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700"
+          class="inline-flex items-center ml-3 justify-center cursor-pointer px-4 py-2 border border-transparent text-base font-medium rounded-lg text-white bg-primary-def hover:bg-primary-dark"
         >
           Vstup
         </button>
@@ -29,20 +29,19 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from '../../store'
-import { UserMutation } from '../../store/module-user/mutations'
-import { IUser } from '../../store/module-user/state'
+import { useUserStore } from '../../store/user/user.store'
+import { IUser } from '../../store/user/user.types'
 
 const STORAGE_KEY = 'chat-user'
 
 export default defineComponent({
   name: 'WelcomeEntry',
   setup() {
-    const store = useStore()
+    const userStore = useUserStore()
     const router = useRouter()
     const username = ref('')
 
-    const user = computed(() => store.state.user.user)
+    const user = computed(() => userStore.user)
 
     const onEntry = () => {
       if (!username.value) return
@@ -50,22 +49,16 @@ export default defineComponent({
         ? { ...user.value, username: username.value }
         : {
             username: username.value,
-            colorClass: '',
+            color: '',
             icons: [],
           }
-      store.commit(UserMutation.SET_USER, newUser)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
+      userStore.setUser(newUser)
 
       router.push({ name: 'PageChat' })
     }
 
     onMounted(() => {
-      const savedUser = localStorage.getItem(STORAGE_KEY)
-      if (savedUser) {
-        let user: IUser = JSON.parse(savedUser)
-        store.commit(UserMutation.SET_USER, user)
-        username.value = user.username
-      }
+      username.value = user.value ? user.value.username : ''
     })
 
     return { onEntry, username }

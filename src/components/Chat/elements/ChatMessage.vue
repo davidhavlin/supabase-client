@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { IMessage } from '../../../store/state'
+import { IMessage } from '../../../store/message/message.types'
 
 export default defineComponent({
   name: 'ChatMessage',

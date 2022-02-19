@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '/welcome',
+        alias: '/',
         name: 'PageWelcome',
         component: () => import('../pages/PageWelcome.vue'),
       },

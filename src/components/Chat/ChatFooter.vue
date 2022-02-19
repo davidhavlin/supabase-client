@@ -4,9 +4,9 @@
       <div class="flex w-full">
         <div
           @click="addMessage"
-          class="bg-blue-500 cursor-pointer flex items-center px-4 py-2 border-r-0 rounded-l text-sm font-medium text-gray-800 select-none"
+          class="bg-primary-def cursor-pointer flex items-center px-4 py-2 border-r-0 rounded-l text-sm font-medium text-gray-800 select-none"
         >
-          <IconChat />
+          <IconChat class="text-white" />
         </div>
         <div class="flex-1">
           <chat-input v-model="message" @addMessage="addMessage" />
@@ -21,17 +21,17 @@
           <chat-settings />
           <button
             @click="addMessage"
-            class="ml-2 px-4 py-2 text-sm rounded text-white bg-blue-500 focus:outline-none hover:bg-blue-400"
+            class="ml-2 px-4 py-2 text-base font-semibold shadow-md rounded text-white bg-primary-def focus:outline-none hover:bg-primary-light"
           >
             Odoslať
           </button>
 
-          <button
+          <!-- <button
             type="button"
-            class="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-indigo-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+            class="py-2 px-4 bg-primary-def hover:bg-primary-dark focus:ring-primary-light focus:ring-offset-indigo-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
           >
             Valider
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -43,27 +43,33 @@ import { defineComponent, ref } from 'vue'
 import IconChat from '../../assets/icons/IconChat.vue'
 import IconOptions from '../../assets/icons/IconOptions.vue'
 import IconUsers from '../../assets/icons/IconUsers.vue'
-import { useStore } from '../../store'
 import ChatSettings from './elements/ChatSettings.vue'
 import ChatInput from './elements/ChatInput.vue'
-import { MessageMutation } from '../../store/module-messages/mutations'
+import { useMessagesStore } from '../../store/message/message.store'
+import { useUserStore } from '../../store/user/user.store'
+import { IMessage } from '../../store/message/message.types'
 
 export default defineComponent({
   name: 'ChatFooter',
   components: { IconChat, IconOptions, IconUsers, ChatSettings, ChatInput },
   setup() {
-    const store = useStore()
+    const msgStore = useMessagesStore()
+    const userStore = useUserStore()
 
     const message = ref('')
 
     const addMessage = () => {
-      const newMessage = {
-        id: new Date().valueOf(),
+      if (!userStore.user) {
+        // show notify
+        return
+      }
+      const newMsg: IMessage = {
         content: message.value,
-        username: 'test',
+        username: userStore.user.username,
+        color: userStore.user.color,
       }
       if (!message.value) return
-      store.commit(MessageMutation.ADD_MESSAGE, newMessage)
+      msgStore.createMessage(newMsg)
       message.value = ''
     }
 
