@@ -1,6 +1,6 @@
 <template>
   <TransitionRoot as="template" :show="drawer">
-    <Dialog as="div" class="fixed inset-0 overflow-hidden" @close="drawer = false">
+    <Dialog as="div" class="fixed z-50 inset-0 overflow-hidden" @close="drawer = false">
       <div class="absolute inset-0 overflow-hidden">
         <TransitionChild
           as="template"
@@ -52,8 +52,40 @@
                 </div>
                 <div class="mt-6 relative flex-1 px-4 sm:px-6">
                   <!-- Replace with your content -->
-                  <div class="absolute inset-0 px-4 sm:px-6">
-                    <settings-colors />
+                  <div class="absolute flex flex-col items-end inset-0 px-4 sm:px-6">
+                    <sup-select
+                      v-model="selectedColor"
+                      label="Username color"
+                      :options="colorOptions"
+                      class="w-full"
+                    >
+                      <template #option-icon="{ option }">
+                        <div class="w-4 h-4 rounded-md" :class="`bg-${option.value}`"></div>
+                      </template>
+                    </sup-select>
+                    <sup-select
+                      v-model="selectedIcon"
+                      :options="iconOptions"
+                      label="Profile icon"
+                      class="mt-4 w-full"
+                      searchable
+                      static
+                    >
+                      <template #option-icon="{ option }">
+                        <div>
+                          <div
+                            class="w-6 h-6 rounded-md flex items-center justify-center bg-primary-def"
+                          >
+                            <i class="text-base" :class="option.value"></i>
+                          </div>
+                        </div>
+                      </template>
+                    </sup-select>
+                    <button
+                      class="mt-4 px-4 py-2 text-base font-semibold shadow-md rounded text-white bg-primary-def focus:outline-none hover:bg-primary-light"
+                    >
+                      Upraviť
+                    </button>
                   </div>
                   <!-- /End replace -->
                 </div>
@@ -77,7 +109,11 @@ import {
 } from '@headlessui/vue'
 import { XIcon } from '@heroicons/vue/outline'
 import { useUiStore } from '../../../store/ui/ui.store'
-import SettingsColors from './SettingsColors.vue'
+import SupSelect from './SupSelect.vue'
+import { colorOptions } from './data-colors'
+import { iconOptions } from './data-icons'
+
+const icons = [{ value: 'someIcon', label: 'Icon' }]
 
 export default defineComponent({
   name: 'DrawerSettings',
@@ -88,10 +124,13 @@ export default defineComponent({
     TransitionChild,
     TransitionRoot,
     XIcon,
-    SettingsColors,
+    SupSelect,
   },
   setup() {
     const store = useUiStore()
+
+    const selectedColor = ref(colorOptions[0])
+    const selectedIcon = ref(iconOptions[0])
 
     const drawer = computed({
       get: () => store.settingsDrawer || false, // bez || false, transition place
@@ -102,6 +141,10 @@ export default defineComponent({
 
     return {
       drawer,
+      colorOptions,
+      iconOptions,
+      selectedColor,
+      selectedIcon,
     }
   },
 })

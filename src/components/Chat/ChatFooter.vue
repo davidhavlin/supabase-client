@@ -25,13 +25,6 @@
           >
             Odoslať
           </button>
-
-          <!-- <button
-            type="button"
-            class="py-2 px-4 bg-primary-def hover:bg-primary-dark focus:ring-primary-light focus:ring-offset-indigo-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-          >
-            Valider
-          </button> -->
         </div>
       </div>
     </div>

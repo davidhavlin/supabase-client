@@ -30,9 +30,6 @@ import WelcomeLogin from '../components/Welcome/WelcomeLogin.vue'
 export default defineComponent({
   name: 'PageWelcome',
   components: { WelcomeEntry, WelcomeLogin },
-  setup() {
-    return {}
-  },
 })
 </script>
 
