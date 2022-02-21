@@ -53,11 +53,22 @@
                 <div class="mt-6 relative flex-1 px-4 sm:px-6">
                   <!-- Replace with your content -->
                   <div class="absolute flex flex-col items-end inset-0 px-4 sm:px-6">
+                    <div class="w-full">
+                      <div class="mb-1 text-sm font-medium text-primary-def">Username</div>
+                      <input
+                        id="pretext-input"
+                        class="w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-white focus:bg-slate-800 px-4 py-2 rounded focus:shadow-outline outline-none"
+                        type="text"
+                        placeholder="Odoslať správu"
+                        v-model="username"
+                        @keydown.enter="$emit('addMessage')"
+                      />
+                    </div>
                     <sup-select
                       v-model="selectedColor"
                       label="Username color"
                       :options="colorOptions"
-                      class="w-full"
+                      class="w-full mt-4"
                     >
                       <template #option-icon="{ option }">
                         <div class="w-4 h-4 rounded-md" :class="`bg-${option.value}`"></div>
@@ -74,7 +85,7 @@
                       <template #option-icon="{ option }">
                         <div>
                           <div
-                            class="w-6 h-6 rounded-md flex items-center justify-center bg-primary-def"
+                            class="w-6 h-6 rounded-md flex items-center justify-center text-white bg-primary-def"
                           >
                             <i class="text-base" :class="option.value"></i>
                           </div>
@@ -112,6 +123,7 @@ import { useUiStore } from '../../../store/ui/ui.store'
 import SupSelect from './SupSelect.vue'
 import { colorOptions } from './data-colors'
 import { iconOptions } from './data-icons'
+import { useUserStore } from '../../../store/user/user.store'
 
 const icons = [{ value: 'someIcon', label: 'Icon' }]
 
@@ -128,6 +140,9 @@ export default defineComponent({
   },
   setup() {
     const store = useUiStore()
+    const userStore = useUserStore()
+
+    const username = ref(userStore.user?.username)
 
     const selectedColor = ref(colorOptions[0])
     const selectedIcon = ref(iconOptions[0])
@@ -145,6 +160,7 @@ export default defineComponent({
       iconOptions,
       selectedColor,
       selectedIcon,
+      username,
     }
   },
 })
