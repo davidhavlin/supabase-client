@@ -16,7 +16,7 @@ const colors = [
 
 module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
-  safelist: [...colors.map((c) => 'bg-' + c)],
+  safelist: [...colors.map((c) => 'bg-' + c), ...colors.map((c) => 'text-' + c)],
   theme: {
     extend: {
       colors: {

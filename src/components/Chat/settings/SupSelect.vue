@@ -1,14 +1,14 @@
 <template>
   <Listbox as="div" v-model="innerValue">
-    <ListboxLabel class="block text-sm font-medium text-primary-def"> {{ label }} </ListboxLabel>
+    <ListboxLabel class="block text-sm font-medium text-primary-def">{{ label }}</ListboxLabel>
     <div class="mt-1 relative">
       <ListboxButton
-        @click="visibleSelect = !visibleSelect"
+        @click.stop="onClickButton"
         class="relative w-full bg-white border overflow-hidden border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-primary-def focus:border-primarring-primary-def sm:text-sm"
       >
         <span class="flex items-center">
           <!-- <img :src="selected.avatar" alt="" class="flex-shrink-0 h-6 w-6 rounded-full" /> -->
-          <slot name="option-icon" :option="innerValue"> </slot>
+          <slot name="option-icon" :option="innerValue"></slot>
           <span class="ml-3 text-slate-500 block truncate">{{ innerValue.label }}</span>
         </span>
         <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -45,39 +45,6 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <!-- <ListboxOptions
-          :static="visibleSearch"
-          class="absolute z-10 mt-1 w-full bg-white shadow-lg h-56 max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-hidden focus:outline-none sm:text-sm"
-        >
-          <virtual-scroll :items="options">
-            <template #item="{ item }">
-              <ListboxOption as="template" :value="item" v-slot="{ active, selected }">
-                <li
-                  :class="[
-                    active ? 'text-white bg-primary-def' : 'text-gray-900',
-                    'cursor-default select-none relative py-2 pl-3 pr-9',
-                  ]"
-                >
-                  <div class="flex items-center">
-                    <slot name="option-icon" :option="item"> </slot>
-                    <span
-                      :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']"
-                    >
-                      {{ item.label }}
-                    </span>
-                  </div>
-
-                  <span
-                    v-if="selected"
-                    :class="[
-                      active ? 'text-white' : 'text-primary-def',
-                      'absolute inset-y-0 right-0 flex items-center pr-4',
-                    ]"
-                  >
-                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                  </span>
-                </li>
-              </ListboxOption> -->
         <div
           v-if="visibleSelect"
           class="absolute z-10 mt-1 w-full bg-white shadow-lg h-56 max-h-56 rounded-md text-base ring-1 ring-black ring-opacity-5 overflow-hidden focus:outline-none sm:text-sm"
@@ -87,7 +54,7 @@
             }
           "
         >
-          <virtual-scroll :items="options">
+          <virtual-scroll :items="filteredOptions">
             <template #item="{ item }">
               <div
                 @click="innerValue = item"
@@ -95,15 +62,13 @@
                 class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-green-300 text-slate-400 hover:text-white"
               >
                 <div class="flex items-center">
-                  <slot name="option-icon" :option="item"> </slot>
+                  <slot name="option-icon" :option="item"></slot>
                   <span
                     :class="[
                       item.value === innerValue.value ? 'font-semibold' : 'font-normal',
                       ' ml-3 block truncate',
                     ]"
-                  >
-                    {{ item.label }}
-                  </span>
+                  >{{ item.label }}</span>
                 </div>
 
                 <span
@@ -182,6 +147,23 @@ export default defineComponent({
       })
     }
 
+    const filteredOptions = computed(() => {
+      if (!search.value || search.value.length < 2) return props.options
+
+      const newOptions = []
+      for (let i = 0; i < props.options.length; i++) {
+        const option = props.options[i]
+        if (option.value.includes(search.value)) {
+          newOptions.push(option)
+        }
+      }
+      return newOptions
+    })
+
+    const onClickButton = () => {
+      visibleSelect.value = !visibleSelect.value
+    }
+
     watch(visibleSelect, (visible) => {
       if (!visible) visibleSearch.value = false
     })
@@ -192,7 +174,9 @@ export default defineComponent({
       visibleSearch,
       visibleSelect,
       onClickSearchIcon,
+      onClickButton,
       searchRef,
+      filteredOptions
     }
   },
 })

@@ -48,7 +48,7 @@
                 class="h-full flex flex-col py-6 bg-slate-600 text-white shadow-xl overflow-y-scroll"
               >
                 <div class="px-4 sm:px-6">
-                  <DialogTitle class="text-lg font-medium"> Settings </DialogTitle>
+                  <DialogTitle class="text-lg font-medium">Settings</DialogTitle>
                 </div>
                 <div class="mt-6 relative flex-1 px-4 sm:px-6">
                   <!-- Replace with your content -->
@@ -93,10 +93,9 @@
                       </template>
                     </sup-select>
                     <button
+                      @click="onSaveChanges"
                       class="mt-4 px-4 py-2 text-base font-semibold shadow-md rounded text-white bg-primary-def focus:outline-none hover:bg-primary-light"
-                    >
-                      Upraviť
-                    </button>
+                    >Upraviť</button>
                   </div>
                   <!-- /End replace -->
                 </div>
@@ -124,6 +123,7 @@ import SupSelect from './SupSelect.vue'
 import { colorOptions } from './data-colors'
 import { iconOptions } from './data-icons'
 import { useUserStore } from '../../../store/user/user.store'
+import { IUser } from '../../../store/user/user.types'
 
 const icons = [{ value: 'someIcon', label: 'Icon' }]
 
@@ -141,8 +141,9 @@ export default defineComponent({
   setup() {
     const store = useUiStore()
     const userStore = useUserStore()
+    const uiStore = useUiStore()
 
-    const username = ref(userStore.user?.username)
+    const username = ref(userStore.user?.username || '')
 
     const selectedColor = ref(colorOptions[0])
     const selectedIcon = ref(iconOptions[0])
@@ -154,6 +155,19 @@ export default defineComponent({
       },
     })
 
+    const onSaveChanges = () => {
+      if (!username.value) return
+
+      const u: IUser = {
+        username: username.value,
+        color: selectedColor.value.value,
+        icons: [selectedIcon.value.value]
+      }
+      console.log({ u });
+      userStore.setUser(u)
+      uiStore.showNotify({ type: 'success', label: 'Profil upravený' })
+    }
+
     return {
       drawer,
       colorOptions,
@@ -161,6 +175,7 @@ export default defineComponent({
       selectedColor,
       selectedIcon,
       username,
+      onSaveChanges
     }
   },
 })

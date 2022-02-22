@@ -1,36 +1,40 @@
 <template>
   <router-view></router-view>
+
+  <!-- <Teleport to="body">
+    <global-notify />
+  </Teleport>-->
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
 import { useUserStore } from './store/user/user.store'
 import { IUser } from './store/user/user.types'
+import GlobalNotify from './components/notify/GlobalNotify.vue'
+
 const STORAGE_KEY = 'chat-user'
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
-    const userStore = useUserStore()
-
+    const userStore = useUserStore();
     onMounted(() => {
-      const savedUser = localStorage.getItem(STORAGE_KEY)
+      const savedUser = localStorage.getItem(STORAGE_KEY);
       if (savedUser) {
-        let user: IUser = JSON.parse(savedUser)
-        userStore.setUser(user)
+        let user: IUser = JSON.parse(savedUser);
+        userStore.setUser(user);
       }
-    })
-
+    });
     userStore.$onAction(({ name, args, after, onError }) => {
-      console.log('Spustila sa USER_STORE akcia s nazvom: ', name, { args })
-
+      console.log("Spustila sa USER_STORE akcia s nazvom: ", name, { args });
       after((res) => {
-        if (name === 'setUser') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(res))
+        if (name === "setUser") {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
         }
-      })
-    })
+      });
+    });
   },
+  components: { GlobalNotify }
 })
 </script>
 
