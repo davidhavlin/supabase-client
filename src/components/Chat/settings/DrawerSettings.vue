@@ -95,7 +95,9 @@
                     <button
                       @click="onSaveChanges"
                       class="mt-4 px-4 py-2 text-base font-semibold shadow-md rounded text-white bg-primary-def focus:outline-none hover:bg-primary-light"
-                    >Upraviť</button>
+                    >
+                      Upraviť
+                    </button>
                   </div>
                   <!-- /End replace -->
                 </div>
@@ -143,9 +145,12 @@ export default defineComponent({
     const userStore = useUserStore()
     const uiStore = useUiStore()
 
-    const username = ref(userStore.user?.username || '')
+    const user = computed(() => userStore.user)
+    const username = ref(user.value?.username || '')
 
-    const selectedColor = ref(colorOptions[0])
+    const activeColor = colorOptions.find((opt) => opt.value === user.value?.color)
+
+    const selectedColor = ref(activeColor || colorOptions[0])
     const selectedIcon = ref(iconOptions[0])
 
     const drawer = computed({
@@ -161,9 +166,9 @@ export default defineComponent({
       const u: IUser = {
         username: username.value,
         color: selectedColor.value.value,
-        icons: [selectedIcon.value.value]
+        icons: [selectedIcon.value.value],
       }
-      console.log({ u });
+      console.log({ u })
       userStore.setUser(u)
       uiStore.showNotify({ type: 'success', label: 'Profil upravený' })
     }
@@ -175,7 +180,7 @@ export default defineComponent({
       selectedColor,
       selectedIcon,
       username,
-      onSaveChanges
+      onSaveChanges,
     }
   },
 })

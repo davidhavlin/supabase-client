@@ -7,4 +7,5 @@ export interface IMessage {
   content: string
   username: string
   color: string
+  icons: string[]
 }

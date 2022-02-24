@@ -58,6 +58,7 @@ export default defineComponent({
       }
       const newMsg: IMessage = {
         content: message.value,
+        icons: userStore.user.icons,
         username: userStore.user.username,
         color: userStore.user.color,
       }

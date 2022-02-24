@@ -6,6 +6,7 @@
       :key="`chat-message-${message.id}`"
       :message="message"
       :colorClass="message.color ? `text-${message.color}` : 'text-red-500'"
+      :icons="message.icons"
       @click="test"
     />
   </div>
