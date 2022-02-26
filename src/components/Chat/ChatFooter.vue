@@ -21,9 +21,14 @@
           <chat-settings />
           <button
             @click="addMessage"
+            :disabled="!!disableCounter"
             class="ml-2 px-4 py-2 text-base font-semibold shadow-md rounded text-white bg-primary-def focus:outline-none hover:bg-primary-light"
+            :class="{ 'bg-slate-500': !!disableCounter }"
           >
             Odoslať
+            <span class="text-sm text-slate-300" v-show="disableCounter"
+              >({{ disableCounter }})</span
+            >
           </button>
         </div>
       </div>
@@ -32,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import IconChat from '../../assets/icons/IconChat.vue'
 import IconOptions from '../../assets/icons/IconOptions.vue'
 import IconUsers from '../../assets/icons/IconUsers.vue'
@@ -51,8 +56,10 @@ export default defineComponent({
 
     const message = ref('')
 
+    const disableCounter = computed(() => msgStore.afterMessageCounter)
+
     const addMessage = () => {
-      if (!userStore.user) {
+      if (!userStore.user || disableCounter.value) {
         // show notify
         return
       }
@@ -70,9 +77,8 @@ export default defineComponent({
     return {
       addMessage,
       message,
+      disableCounter,
     }
   },
 })
 </script>
-
-<style lang="scss" scoped></style>

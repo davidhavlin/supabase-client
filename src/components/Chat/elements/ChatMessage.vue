@@ -4,13 +4,16 @@
       <i v-for="icon in icons" :key="`icon-${icon}`" class="text-base" :class="icon"></i>
     </div>
     <div class="font-bold" :class="colorClass">{{ message.username }}:</div>
-    <div class="ml-2 font-medium">{{ message.content }}</div>
+    <div class="ml-2 font-medium tooltip" :data-tip="formatedTime">
+      {{ wordFilter.clean(message.content) }}
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import { IMessage } from '../../../store/message/message.types'
+import { wordFilter } from '../../../main'
 
 export default defineComponent({
   name: 'ChatMessage',
@@ -19,10 +22,20 @@ export default defineComponent({
     colorClass: { type: String, default: 'text-lime-500' },
     icons: { type: Array as PropType<string[]>, default: [] },
   },
-  setup() {
-    return {}
+  setup(props) {
+    return {
+      formatedTime: computed(() => {
+        return new Date(props.message.created_at as Date).toLocaleString(undefined, {
+          year: '2-digit',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          hour12: false,
+          minute: '2-digit',
+        })
+      }),
+      wordFilter,
+    }
   },
 })
 </script>
-
-<style lang="scss" scoped></style>

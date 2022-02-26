@@ -1,7 +1,8 @@
 <template>
   <input
     id="pretext-input"
-    class="w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-white focus:bg-slate-800 px-4 py-2 rounded-r focus:shadow-outline outline-none"
+    autocomplete="off"
+    class="w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-transparent focus:bg-slate-800 px-4 py-2 rounded-r focus:shadow-outline outline-none"
     type="text"
     placeholder="Odoslať správu"
     v-model="message"
@@ -10,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'ChatInput',
@@ -30,5 +31,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped></style>

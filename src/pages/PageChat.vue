@@ -1,6 +1,6 @@
 <template>
-  <main class="flex flex-col h-full">
-    <h1 class="text-3xl font-bold underline">Hello world!</h1>
+  <main class="max-w-6xl mx-auto flex flex-col h-full">
+    <!-- <h1 class="text-3xl font-bold underline">Hello world!</h1> -->
 
     <chat-main />
 
@@ -24,5 +24,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped></style>

@@ -3,6 +3,11 @@ import App from './App.vue'
 import router from './router'
 import './index.css'
 import { createPinia } from 'pinia'
+import Filter from 'bad-words'
+import skBadWords from './utils/bad-words'
+
+const wordFilter = new Filter()
+wordFilter.addWords(...skBadWords)
 
 const clickOutside = {
   beforeMount: (el: any, binding: any, vnode: any) => {
@@ -33,3 +38,4 @@ app.use(router)
 
 app.mount('#app')
 export default app
+export { wordFilter }
