@@ -1,5 +1,10 @@
+export type TChatMessage = Required<IMessage>
+
 export interface IMessagesState {
-  chatMessages: IMessage[]
+  chatMessages: TChatMessage[]
+  addedMessages: {
+    [key: number]: boolean
+  }
   afterMessageCounter: number
   counterTimeout: null | number
 }
