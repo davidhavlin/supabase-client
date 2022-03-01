@@ -18,18 +18,17 @@ export const useMessagesStore = defineStore({
         const { data: messages, error } = await supabase
           .from<TChatMessage>('messages')
           .select()
+          .order('created_at', { ascending: false })
           .limit(30)
         if (!messages) return
 
-        this.chatMessages = messages
+        this.chatMessages = messages.reverse()
       } catch (error) {
         console.log(error)
       }
     },
     async listenSupabase(cb: (msg: TChatMessage) => void) {
-      console.log('LISTEN FOR INSERTS')
-
-      supabase
+      const msgSubscription = supabase
         .from('messages')
         .on('INSERT', ({ new: msg }: SupabaseRealtimePayload<TChatMessage>) => {
           this.chatMessages.push(msg)

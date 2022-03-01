@@ -1,5 +1,5 @@
 <template>
-  <div class="max-h-screen h-full bg-gray-900 flex flex-col justify-end">
+  <div class="max-h-screen overflow-hidden h-full bg-gray-900 flex flex-col justify-end">
     <div class="h-full">
       <router-view></router-view>
     </div>
@@ -21,8 +21,8 @@ import { defineComponent } from 'vue'
 import GlobalNotify from '../components/notify/GlobalNotify.vue'
 
 export default defineComponent({
-  name: "LayoutMain",
-  components: { GlobalNotify }
+  name: 'LayoutMain',
+  components: { GlobalNotify },
 })
 </script>
 

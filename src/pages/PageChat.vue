@@ -11,15 +11,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import ChatFooter from '../components/Chat/ChatFooter.vue'
 import ChatMain from '../components/Chat/ChatMain.vue'
 import DrawerSettings from '../components/Chat/settings/DrawerSettings.vue'
+import { useUserStore } from '../store/user/user.store'
 
 export default defineComponent({
   name: 'PageChat',
   components: { ChatFooter, ChatMain, DrawerSettings },
   setup() {
+    const userStore = useUserStore()
+    const router = useRouter()
+
+    onMounted(() => {
+      if (!userStore.user) {
+        router.push({ name: 'PageWelcome' })
+      }
+    })
     return {}
   },
 })

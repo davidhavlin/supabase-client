@@ -1,18 +1,28 @@
 <template>
-  <div class="flex flex-row items-center text-lg text-slate-200 mb-2">
-    <IconRemove
-      v-if="msgDeletable[message.id]"
-      @click="removeMessage(message.id)"
-      class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
-    />
+  <div class="text-lg text-left text-slate-200 mb-2">
+    <div class="inline-block">
+      <div class="flex flex-row items-center">
+        <IconRemove
+          v-if="msgDeletable[message.id]"
+          @click="removeMessage(message.id)"
+          class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
+        />
 
-    <div v-if="icons.length > 0">
-      <i v-for="icon in icons" :key="`icon-${icon}`" class="text-base" :class="icon"></i>
+        <div v-if="icons.length > 0">
+          <i
+            v-for="icon in icons"
+            :key="`icon-${icon}`"
+            class="text-base w-6 h-6 rounded-md flex items-center justify-center mr-1"
+            :class="[icon, colorClass]"
+          ></i>
+        </div>
+        <div class="font-bold" :class="colorClass">{{ message.username }}</div>
+        <span>:</span>
+      </div>
     </div>
-    <div class="font-bold" :class="colorClass">{{ message.username }}:</div>
-    <div class="ml-2 font-medium tooltip" :data-tip="formatedTime">
+    <span class="ml-3 inline font-medium text-left tooltip" :data-tip="formatedTime">
       {{ wordFilter.clean(message.content) }}
-    </div>
+    </span>
   </div>
 </template>
 

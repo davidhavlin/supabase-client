@@ -1,8 +1,8 @@
 <template>
   <transition name="notify" @after-leave="onAfterLeave">
     <div
-      @click="onClickNotify"
       v-show="notify.visible"
+      @click="onClickNotify"
       class="notify flex w-full absolute left-1/2 z-[1000] bottom-4 max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md"
     >
       <div :class="`bg-${status[type]}`" class="flex items-center justify-center w-12">
@@ -63,19 +63,21 @@ export default defineComponent({
 
     const type = computed(() => notify.value.data?.type || 'info')
 
-
-    watch(() => notify.value.visible, (visible) => {
-      if (visible) {
-        closeAfterTime()
+    watch(
+      () => notify.value.visible,
+      (visible) => {
+        if (visible) {
+          closeAfterTime()
+        }
       }
-    })
+    )
 
     return {
       notify,
       status,
       type,
       onAfterLeave,
-      onClickNotify
+      onClickNotify,
     }
   },
 })
