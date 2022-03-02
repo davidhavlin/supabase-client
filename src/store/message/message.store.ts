@@ -29,8 +29,10 @@ export const useMessagesStore = defineStore({
     },
     async listenSupabase(cb: (msg: TChatMessage) => void) {
       const msgSubscription = supabase
-        .from('messages')
+        .from('*')
         .on('INSERT', ({ new: msg }: SupabaseRealtimePayload<TChatMessage>) => {
+          console.log('supabase LISTEN INSERT')
+
           this.chatMessages.push(msg)
           cb(msg)
         })

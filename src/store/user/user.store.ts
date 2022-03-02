@@ -2,6 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { IOnlineUser, IUser, IUserState } from './user.types'
 import { supabase } from '../../plugins/supabase'
 import { SupabaseRealtimePayload } from '@supabase/supabase-js'
+import { handleError } from '../../utils/error-handling'
 
 export const useUserStore = defineStore({
   id: 'user',
@@ -13,7 +14,7 @@ export const useUserStore = defineStore({
   actions: {
     async setUser(user: IUser) {
       this.user = user
-      this.listenUsers()
+      // this.listenUsers()
       if (this.onlineId) {
         this.updateOnlineUser(user)
       } else {
@@ -28,53 +29,44 @@ export const useUserStore = defineStore({
         user_id: null, // todo later
         username: user.username,
       }
-      try {
-        const { data, error } = await supabase.from<IOnlineUser>('online_users').insert(onlineUser)
-        console.log({ error })
+      const { data, error } = await supabase.from<IOnlineUser>('online_users').insert(onlineUser)
+      handleError(error)
 
-        if (data) {
-          this.onlineId = data[0].id
-        }
-      } catch (error) {
-        console.log('SET ONLINE USER ERROR', error)
+      if (data) {
+        this.onlineId = data[0].id
       }
     },
 
     async updateOnlineUser(user: IUser) {
-      try {
-        const { data, error } = await supabase
-          .from('online_users')
-          .update({ last_activity: new Date(), username: user.username })
-          .match({ id: this.onlineId })
-      } catch (error) {
-        console.log('UPDATE ONLINE USER ERROR', error)
-      }
+      const { data, error } = await supabase
+        .from('online_users')
+        .update({ last_activity: new Date(), username: user.username })
+        .match({ id: this.onlineId })
+
+      handleError(error)
     },
 
     async refreshActivity() {
       if (!this.onlineId) return
-      try {
-        const { data, error } = await supabase
-          .from('online_users')
-          .update({ last_activity: new Date() })
-          .match({ id: this.onlineId })
-      } catch (error) {
-        console.log('REFRESH ACTIVITY ERROR', error)
-      }
+      const { data, error } = await supabase
+        .from('online_users')
+        .update({ last_activity: new Date() })
+        .match({ id: this.onlineId })
+      handleError(error)
     },
 
-    async listenUsers() {
-      const userSubscription = supabase
-        .from('online_users')
-        .on('INSERT', ({ new: newOnlineUser }: SupabaseRealtimePayload<IOnlineUser>) => {
-          console.log('USER JOINED CHAT', { newOnlineUser })
-        })
-        // .on('DELETE', ({ old }: SupabaseRealtimePayload<TChatMessage>) => {
-        //   const index = this.chatMessages.findIndex((msg) => msg.id === old.id)
-        //   this.chatMessages.splice(index, 1)
-        // })
-        .subscribe()
-    },
+    // async listenUsers() {
+    //   const userSubscription = supabase
+    //     .from('online_users')
+    //     .on('INSERT', ({ new: newOnlineUser }: SupabaseRealtimePayload<IOnlineUser>) => {
+    //       console.log('USER JOINED CHAT', { newOnlineUser })
+    //     })
+    //     // .on('DELETE', ({ old }: SupabaseRealtimePayload<TChatMessage>) => {
+    //     //   const index = this.chatMessages.findIndex((msg) => msg.id === old.id)
+    //     //   this.chatMessages.splice(index, 1)
+    //     // })
+    //     .subscribe()
+    // },
   },
 })
 
