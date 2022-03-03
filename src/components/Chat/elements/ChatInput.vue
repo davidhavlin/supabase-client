@@ -10,24 +10,19 @@
   />
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 
-export default defineComponent({
-  name: 'ChatInput',
-  props: {
-    modelValue: { type: String, required: true },
-  },
-  setup(props, { emit }) {
-    const message = computed({
-      get: () => props.modelValue,
-      set: (val: string) => {
-        emit('update:modelValue', val)
-      },
-    })
-    return {
-      message,
-    }
+const props = defineProps({
+  modelValue: { type: String, required: true },
+})
+
+const emit = defineEmits(['update:modelValue', 'addMessage'])
+
+const message = computed({
+  get: () => props.modelValue,
+  set: (val: string) => {
+    emit('update:modelValue', val)
   },
 })
 </script>
