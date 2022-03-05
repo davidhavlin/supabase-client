@@ -1,6 +1,7 @@
 export interface IUserState {
   user: null | IUser
   onlineId: null | number
+  onlineUsers: null | IOnlineUser[]
 }
 
 export interface IUser {
@@ -14,4 +15,5 @@ export interface IOnlineUser {
   id: number
   user_id: number | null
   last_activity: Date
+  session: string
 }

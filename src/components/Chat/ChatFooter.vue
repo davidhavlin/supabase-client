@@ -14,7 +14,7 @@
       </div>
       <div class="flex flex-row justify-between flex-nowrap mt-2 text-slate-700">
         <div class="flex flex-row font-bold">
-          <span>0</span> <IconUsers class="ml-1 text-slate-700" />
+          <span>{{ onlineUsers }}</span> <IconUsers class="ml-1 text-slate-700" />
         </div>
 
         <div class="flex flex-row items-center">
@@ -36,8 +36,8 @@
   </footer>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+<script lang="ts" setup>
+import { computed, ref } from 'vue'
 import IconChat from '../../assets/icons/IconChat.vue'
 import IconOptions from '../../assets/icons/IconOptions.vue'
 import IconUsers from '../../assets/icons/IconUsers.vue'
@@ -47,38 +47,28 @@ import { useMessagesStore } from '../../store/message/message.store'
 import { useUserStore } from '../../store/user/user.store'
 import { IMessage } from '../../store/message/message.types'
 
-export default defineComponent({
-  name: 'ChatFooter',
-  components: { IconChat, IconOptions, IconUsers, ChatSettings, ChatInput },
-  setup() {
-    const msgStore = useMessagesStore()
-    const userStore = useUserStore()
+const msgStore = useMessagesStore()
+const userStore = useUserStore()
 
-    const message = ref('')
+const onlineUsers = computed(() => (userStore.onlineUsers ? userStore.onlineUsers.length : 0))
 
-    const disableCounter = computed(() => msgStore.afterMessageCounter)
+const message = ref('')
 
-    const addMessage = () => {
-      if (!userStore.user || disableCounter.value) {
-        // show notify
-        return
-      }
-      const newMsg: IMessage = {
-        content: message.value,
-        icons: userStore.user.icons,
-        username: userStore.user.username,
-        color: userStore.user.color,
-      }
-      if (!message.value) return
-      msgStore.createMessage(newMsg)
-      message.value = ''
-    }
+const disableCounter = computed(() => msgStore.afterMessageCounter)
 
-    return {
-      addMessage,
-      message,
-      disableCounter,
-    }
-  },
-})
+const addMessage = () => {
+  if (!userStore.user || disableCounter.value) {
+    // show notify
+    return
+  }
+  const newMsg: IMessage = {
+    content: message.value,
+    icons: userStore.user.icons,
+    username: userStore.user.username,
+    color: userStore.user.color,
+  }
+  if (!message.value) return
+  msgStore.createMessage(newMsg)
+  message.value = ''
+}
 </script>

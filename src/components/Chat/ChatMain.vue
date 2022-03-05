@@ -23,82 +23,60 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, nextTick, onMounted, ref } from 'vue'
-// import { supabase } from '../../plugins/supabase'
+<script lang="ts" setup>
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useMessagesStore } from '../../store/message/message.store'
-import { IMessage } from '../../store/message/message.types'
 import ChatMessage from './elements/ChatMessage.vue'
-import { TChatMessage } from '../../store/message/message.types'
 
-export default defineComponent({
-  name: 'ChatMain',
-  components: { ChatMessage },
-  setup() {
-    const store = useMessagesStore()
-    const chatContainerRef = ref<HTMLElement | null>(null)
+const store = useMessagesStore()
+const chatContainerRef = ref<HTMLElement | null>(null)
 
-    const chatMessages = computed(() => store.chatMessages)
+const chatMessages = computed(() => store.chatMessages)
 
-    const newMessageAlert = ref(false)
-    const alertTimeout = ref<null | number>(null)
-    const ALERT_DURATION = 6000
-    const showNewMessageAlert = () => {
-      alertTimeout.value && clearTimeout(alertTimeout.value)
-      newMessageAlert.value = true
-      alertTimeout.value = window.setTimeout(() => {
-        newMessageAlert.value = false
-      }, ALERT_DURATION)
-    }
-
-    const fetchMessages = async () => {
-      if (chatMessages.value.length > 0) return
-      await store.fetchMessages()
-    }
-
-    const scrollToBottom = () => {
-      if (!chatContainerRef.value) return
-      newMessageAlert.value = false
-      chatContainerRef.value.scrollTo({
-        top: chatContainerRef.value.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-
-    const SPACE_PADDING = 50
-    const isChatMoreScrolled = () => {
-      const el = chatContainerRef.value
-      if (!el) return
-      return el.scrollHeight - el.scrollTop - SPACE_PADDING > el.clientHeight
-    }
-
-    const messageReceived = (msg: TChatMessage): void => {
-      console.log('Log z komponentu', { msg }, isChatMoreScrolled())
-      if (!chatContainerRef.value) return
-      // chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight
-      nextTick(() => {
-        if (isChatMoreScrolled()) {
-          showNewMessageAlert()
-        } else {
-          scrollToBottom()
-        }
-      })
-    }
-
-    onMounted(async () => {
-      await fetchMessages()
+const scrollOrNotify = () => {
+  if (!chatContainerRef.value) return
+  // chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight
+  nextTick(() => {
+    if (isChatMoreScrolled()) {
+      showNewMessageAlert()
+    } else {
       scrollToBottom()
-      store.listenSupabase(messageReceived)
-    })
-
-    return {
-      chatMessages,
-      chatContainerRef,
-      newMessageAlert,
-      isChatMoreScrolled,
-      scrollToBottom,
     }
-  },
+  })
+}
+watch(() => chatMessages.value, scrollOrNotify)
+
+const newMessageAlert = ref(false)
+const alertTimeout = ref<null | number>(null)
+const ALERT_DURATION = 6000
+const showNewMessageAlert = () => {
+  alertTimeout.value && clearTimeout(alertTimeout.value)
+  newMessageAlert.value = true
+  alertTimeout.value = window.setTimeout(() => {
+    newMessageAlert.value = false
+  }, ALERT_DURATION)
+}
+
+const scrollToBottom = () => {
+  if (!chatContainerRef.value) return
+  newMessageAlert.value = false
+  chatContainerRef.value.scrollTo({
+    top: chatContainerRef.value.scrollHeight,
+    behavior: 'smooth',
+  })
+}
+
+const SPACE_PADDING = 50
+const isChatMoreScrolled = () => {
+  const el = chatContainerRef.value
+  if (!el) return
+  return el.scrollHeight - el.scrollTop - SPACE_PADDING > el.clientHeight
+}
+
+onMounted(() => {
+  nextTick(() => {
+    scrollToBottom()
+  })
 })
 </script>
 

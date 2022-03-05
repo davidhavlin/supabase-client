@@ -27,14 +27,13 @@ export const useMessagesStore = defineStore({
         console.log(error)
       }
     },
-    async listenSupabase(cb: (msg: TChatMessage) => void) {
+    listenMessages() {
       const msgSubscription = supabase
-        .from('*')
+        .from('messages')
         .on('INSERT', ({ new: msg }: SupabaseRealtimePayload<TChatMessage>) => {
           console.log('supabase LISTEN INSERT')
 
           this.chatMessages.push(msg)
-          cb(msg)
         })
         .on('DELETE', ({ old }: SupabaseRealtimePayload<TChatMessage>) => {
           const index = this.chatMessages.findIndex((msg) => msg.id === old.id)

@@ -3,18 +3,19 @@ import { IOnlineUser, IUser, IUserState } from './user.types'
 import { supabase } from '../../plugins/supabase'
 import { SupabaseRealtimePayload } from '@supabase/supabase-js'
 import { handleError } from '../../utils/error-handling'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useUserStore = defineStore({
   id: 'user',
   state: (): IUserState => ({
     user: null,
     onlineId: null,
+    onlineUsers: null,
   }),
 
   actions: {
     async setUser(user: IUser) {
       this.user = user
-      // this.listenUsers()
       if (this.onlineId) {
         this.updateOnlineUser(user)
       } else {
@@ -24,17 +25,22 @@ export const useUserStore = defineStore({
     },
 
     async setOnlineUser(user: IUser) {
+      const sessionId = uuidv4()
+      sessionStorage.setItem('chat-session', sessionId)
+
       const onlineUser: Partial<IOnlineUser> = {
         last_activity: new Date(),
         user_id: null, // todo later
         username: user.username,
+        session: sessionId,
       }
-      const { data, error } = await supabase.from<IOnlineUser>('online_users').insert(onlineUser)
-      handleError(error)
 
-      if (data) {
-        this.onlineId = data[0].id
-      }
+      // const { data, error } = await supabase.from<IOnlineUser>('online_users').insert(onlineUser)
+      // handleError(error)
+
+      // if (data) {
+      //   this.onlineId = data[0].id
+      // }
     },
 
     async updateOnlineUser(user: IUser) {
@@ -55,18 +61,23 @@ export const useUserStore = defineStore({
       handleError(error)
     },
 
-    // async listenUsers() {
-    //   const userSubscription = supabase
-    //     .from('online_users')
-    //     .on('INSERT', ({ new: newOnlineUser }: SupabaseRealtimePayload<IOnlineUser>) => {
-    //       console.log('USER JOINED CHAT', { newOnlineUser })
-    //     })
-    //     // .on('DELETE', ({ old }: SupabaseRealtimePayload<TChatMessage>) => {
-    //     //   const index = this.chatMessages.findIndex((msg) => msg.id === old.id)
-    //     //   this.chatMessages.splice(index, 1)
-    //     // })
-    //     .subscribe()
-    // },
+    async fetchOnlineUsers() {
+      const { data: users, error } = await supabase.from<IOnlineUser>('online_users').select()
+      if (error) {
+        console.log('[ERROR]: fetchOnlineUsers', error)
+      } else {
+        this.onlineUsers = users
+      }
+    },
+
+    listenUsers() {
+      const onlineUsers = supabase
+        .from('online_users')
+        .on('*', (payload) => {
+          console.log('Change received!', payload)
+        })
+        .subscribe()
+    },
   },
 })
 

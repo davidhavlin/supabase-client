@@ -10,27 +10,46 @@
   </main>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+<script lang="ts" setup>
+import { onBeforeMount, onMounted } from 'vue'
+// import { useRouter } from 'vue-router'
 import ChatFooter from '../components/Chat/ChatFooter.vue'
 import ChatMain from '../components/Chat/ChatMain.vue'
 import DrawerSettings from '../components/Chat/settings/DrawerSettings.vue'
+import { useMessagesStore } from '../store/message/message.store'
 import { useUserStore } from '../store/user/user.store'
 
-export default defineComponent({
-  name: 'PageChat',
-  components: { ChatFooter, ChatMain, DrawerSettings },
-  setup() {
-    const userStore = useUserStore()
-    const router = useRouter()
+const userStore = useUserStore()
+const messageStore = useMessagesStore()
 
-    onMounted(() => {
-      if (!userStore.user) {
-        router.push({ name: 'PageWelcome' })
-      }
-    })
-    return {}
-  },
+// const router = useRouter()
+console.log('CREATED PAGE CHAT')
+
+const listenSupabase = () => {
+  messageStore.listenMessages()
+  userStore.listenUsers()
+}
+
+const fetchMessages = async () => {
+  if (messageStore.chatMessages.length > 0) return
+  await messageStore.fetchMessages()
+}
+const fetchOnlineUsers = async () => {
+  if (!userStore.onlineUsers) return
+  await userStore.fetchOnlineUsers()
+}
+
+onBeforeMount(async () => {
+  listenSupabase()
+  await fetchMessages()
+  await fetchOnlineUsers()
+})
+
+onMounted(async () => {
+  // if (!userStore.user) {
+  //   router.push({ name: 'PageWelcome' })
+  // }
+  console.log(window.sessionStorage)
+  // sessionStorage.setItem('skuska', '111')
 })
 </script>

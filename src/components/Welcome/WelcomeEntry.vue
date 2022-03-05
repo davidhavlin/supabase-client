@@ -26,43 +26,36 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
+<script lang="ts" setup>
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../store/user/user.store'
 import { IUser } from '../../store/user/user.types'
 
 const STORAGE_KEY = 'chat-user'
 
-export default defineComponent({
-  name: 'WelcomeEntry',
-  setup() {
-    const userStore = useUserStore()
-    const router = useRouter()
-    const username = ref('')
+const userStore = useUserStore()
+const router = useRouter()
+const username = ref('')
 
-    const user = computed(() => userStore.user)
+const user = computed(() => userStore.user)
 
-    const onEntry = () => {
-      if (!username.value) return
-      const newUser: IUser = user.value
-        ? { ...user.value, username: username.value }
-        : {
-            username: username.value,
-            color: '',
-            icons: [],
-          }
-      userStore.setUser(newUser)
+const onEntry = () => {
+  if (!username.value) return
+  const newUser: IUser = user.value
+    ? { ...user.value, username: username.value }
+    : {
+        username: username.value,
+        color: '',
+        icons: [],
+      }
+  userStore.setUser(newUser)
 
-      router.push({ name: 'PageChat' })
-    }
+  router.push({ name: 'PageChat' })
+}
 
-    onMounted(() => {
-      username.value = user.value ? user.value.username : ''
-    })
-
-    return { onEntry, username }
-  },
+onMounted(() => {
+  username.value = user.value ? user.value.username : ''
 })
 </script>
 
