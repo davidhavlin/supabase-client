@@ -5,6 +5,7 @@
     </div>
 
     <Teleport to="body">
+      <loading-container />
       <global-notify />
     </Teleport>
 
@@ -16,14 +17,7 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import GlobalNotify from '../components/notify/GlobalNotify.vue'
-
-export default defineComponent({
-  name: 'LayoutMain',
-  components: { GlobalNotify },
-})
+import LoadingContainer from '../components/LoadingContainer.vue'
 </script>
-
-<style lang="scss" scoped></style>

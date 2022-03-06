@@ -1,6 +1,7 @@
 import { SupabaseRealtimePayload } from '@supabase/supabase-js'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../../plugins/supabase'
+import { handleError } from '../../utils/handle-error'
 import { IMessage, IMessagesState, TChatMessage } from './message.types'
 
 export const useMessagesStore = defineStore({
@@ -44,14 +45,11 @@ export const useMessagesStore = defineStore({
 
     async createMessage(msg: IMessage) {
       this.counterTimeout && clearTimeout(this.counterTimeout)
-      try {
-        const { data, error } = await supabase.from<IMessage>('messages').insert([msg])
-        if (data && data.length > 0 && data[0].id) {
-          this.addedMessages[data[0].id] = true
-          this.launchCounter(data[0].id)
-        }
-      } catch (error) {
-        console.log('CREATE MESSAGE ERROR', error)
+      const { data, error } = await supabase.from<IMessage>('messages').insert([msg])
+      handleError(error)
+      if (data && data.length > 0 && data[0].id) {
+        this.addedMessages[data[0].id] = true
+        this.launchCounter(data[0].id)
       }
     },
 

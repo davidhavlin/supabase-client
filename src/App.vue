@@ -2,36 +2,28 @@
   <router-view></router-view>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted } from 'vue'
+<script lang="ts" setup>
+import { onBeforeMount } from 'vue'
+import { supabase } from './plugins/supabase'
 import { useUserStore } from './store/user/user.store'
 import { IUser } from './store/user/user.types'
-import GlobalNotify from './components/notify/GlobalNotify.vue'
 
 const STORAGE_KEY = 'chat-user'
 
-export default defineComponent({
-  name: 'App',
-  setup() {
-    const userStore = useUserStore()
-    onMounted(() => {
-      const savedUser = localStorage.getItem(STORAGE_KEY)
-      if (savedUser) {
-        let user: IUser = JSON.parse(savedUser)
-        userStore.setUser(user)
-      }
-    })
-    userStore.$onAction(({ name, args, after, onError }) => {
-      console.log('Spustila sa USER_STORE akcia s nazvom: ', name, { args })
-      after((res) => {
-        if (name === 'setUser') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(res))
-        }
-      })
-    })
-  },
-  components: { GlobalNotify },
+const userStore = useUserStore()
+onBeforeMount(async () => {
+  console.log('ON BEFORE MOUNT')
+
+  await userStore.checkIfUserIsLogged()
 })
+// userStore.$onAction(({ name, args, after, onError }) => {
+//   console.log('Spustila sa USER_STORE akcia s nazvom: ', name, { args })
+//   after((res) => {
+//     if (name === 'setUser') {
+//       localStorage.setItem(STORAGE_KEY, JSON.stringify(res))
+//     }
+//   })
+// })
 </script>
 
 <style>

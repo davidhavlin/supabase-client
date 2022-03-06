@@ -4,6 +4,7 @@ import { INotifyData, IUiState } from './ui.types'
 export const useUiStore = defineStore({
   id: 'ui',
   state: (): IUiState => ({
+    loading: false,
     settingsDrawer: false,
     notify: {
       visible: false,

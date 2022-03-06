@@ -9,6 +9,7 @@
       <button
         type="button"
         class="py-2 px-4 flex justify-center items-center bg-gray-600 hover:bg-gray-700 focus:ring-gray-500 focus:ring-offset-gray-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+        @click="userStore.signInWithGithub"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -36,7 +37,7 @@
       <span class="w-1/5 border-b dark:border-gray-600 lg:w-1/5"></span>
     </div>
 
-    <div class="flex items-center mt-4 -mx-2">
+    <!-- <div class="flex items-center mt-4 -mx-2">
       <button
         type="button"
         class="py-2 px-4 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
@@ -55,28 +56,21 @@
         </svg>
         Sign in with Google
       </button>
-    </div>
+    </div> -->
 
-    <p class="mt-8 text-xs font-light text-center text-gray-400">
+    <!-- <p class="mt-8 text-xs font-light text-center text-gray-400">
       Don't have an account?
       <a href="#" class="font-medium text-gray-700 dark:text-gray-200 hover:underline"
         >Create One</a
       >
-    </p>
+    </p> -->
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import { AnnotationIcon } from '@heroicons/vue/outline'
-
-export default defineComponent({
-  name: 'WelcomeLogin',
-  components: { AnnotationIcon },
-  setup() {
-    return {}
-  },
-})
+import { useUserStore } from '../../store/user/user.store'
+const userStore = useUserStore()
 </script>
 
 <style lang="scss" scoped></style>

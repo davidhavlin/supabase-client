@@ -11,7 +11,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onMounted } from 'vue'
+import { onBeforeMount, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 // import { useRouter } from 'vue-router'
 import ChatFooter from '../components/Chat/ChatFooter.vue'
 import ChatMain from '../components/Chat/ChatMain.vue'
@@ -21,9 +22,17 @@ import { useUserStore } from '../store/user/user.store'
 
 const userStore = useUserStore()
 const messageStore = useMessagesStore()
+const router = useRouter()
 
 // const router = useRouter()
-console.log('CREATED PAGE CHAT')
+watch(
+  () => userStore.user,
+  (user) => {
+    if (!user) {
+      router.push({ name: 'PageWelcome' })
+    }
+  }
+)
 
 const listenSupabase = () => {
   messageStore.listenMessages()
@@ -35,7 +44,7 @@ const fetchMessages = async () => {
   await messageStore.fetchMessages()
 }
 const fetchOnlineUsers = async () => {
-  if (!userStore.onlineUsers) return
+  if (userStore.onlineUsers) return
   await userStore.fetchOnlineUsers()
 }
 
@@ -49,7 +58,6 @@ onMounted(async () => {
   // if (!userStore.user) {
   //   router.push({ name: 'PageWelcome' })
   // }
-  console.log(window.sessionStorage)
   // sessionStorage.setItem('skuska', '111')
 })
 </script>

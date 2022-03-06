@@ -6,6 +6,11 @@
       >
         <IconOptions />
       </span>
+      <div v-if="user.avatar_url" class="avatar">
+        <div class="w-10 mask mask-squircle">
+          <img :src="user.avatar_url" />
+        </div>
+      </div>
     </MenuButton>
 
     <transition
@@ -22,14 +27,14 @@
         <div class="py-1">
           <MenuItem v-slot="{ active }">
             <div class="block px-4 py-2 text-sm text-primary-def font-bold">
-              {{ user?.username }}
+              {{ user.username }}
             </div>
           </MenuItem>
         </div>
         <div class="py-1">
           <MenuItem v-slot="{ active }">
             <button
-              @click="openDrawer"
+              @click="uiStore.settingsDrawer = true"
               :class="[
                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                 'block w-full px-4 py-2 text-left text-sm',
@@ -51,14 +56,15 @@
         </div>
         <div class="py-1">
           <MenuItem v-slot="{ active }">
-            <a
-              href="#"
+            <button
+              @click="userStore.logoutUser"
               :class="[
                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                'block px-4 py-2 text-sm',
+                'block w-full px-4 py-2 text-sm text-left',
               ]"
-              >Logout</a
             >
+              Logout
+            </button>
           </MenuItem>
         </div>
       </MenuItems>
@@ -66,32 +72,17 @@
   </Menu>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
 import IconOptions from '../../../assets/icons/IconOptions.vue'
-import SpDropdown from '../../buttons/SpDropdown.vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { useUserStore } from '../../../store/user/user.store'
 import { useUiStore } from '../../../store/ui/ui.store'
+import { IRegisteredUser } from '../../../store/user/user.types'
+import { useUserStore } from '../../../store/user/user.store'
 
-export default defineComponent({
-  name: 'ChatSettings',
-  components: { IconOptions, SpDropdown, Menu, MenuButton, MenuItem, MenuItems },
-  setup() {
-    const userStore = useUserStore()
-    const uiStore = useUiStore()
+const props = defineProps<{
+  user: IRegisteredUser
+}>()
 
-    const openDrawer = () => {
-      uiStore.settingsDrawer = true
-    }
-
-    const user = computed(() => userStore.user)
-    return {
-      user,
-      openDrawer,
-    }
-  },
-})
+const uiStore = useUiStore()
+const userStore = useUserStore()
 </script>
-
-<style lang="scss" scoped></style>

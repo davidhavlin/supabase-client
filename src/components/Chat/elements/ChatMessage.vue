@@ -8,7 +8,7 @@
           class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
         />
 
-        <div v-if="icons.length > 0">
+        <div v-if="icons && icons.length > 0">
           <i
             v-for="icon in icons"
             :key="`icon-${icon}`"
@@ -26,48 +26,44 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { IMessage } from '../../../store/message/message.types'
 import { wordFilter } from '../../../main'
 import { useMessagesStore } from '../../../store/message/message.store'
 import IconRemove from '../../../assets/icons/IconRemove.vue'
 import { useUiStore } from '../../../store/ui/ui.store'
 
-export default defineComponent({
-  name: 'ChatMessage',
-  components: { IconRemove },
-  props: {
-    message: { type: Object as PropType<Required<IMessage>>, required: true },
-    colorClass: { type: String, default: 'text-lime-500' },
-    icons: { type: Array as PropType<string[]>, default: [] },
-  },
-  setup(props) {
-    const store = useMessagesStore()
-    const ui = useUiStore()
+interface Props {
+  message: Required<IMessage>
+  colorClass?: string
+  icons?: string[] | null
+}
 
-    const removeMessage = async (id: number) => {
-      const success = await store.removeMessage(id)
-      success
-        ? ui.showNotify({ type: 'success', label: 'Správa vymazaná' })
-        : ui.showNotify({ type: 'error', label: 'Niečo sa pokazilo' })
-    }
+const props = withDefaults(defineProps<Props>(), {
+  colorClass: 'text-lime-500',
+  icons: () => [],
+})
 
-    return {
-      formatedTime: computed(() => {
-        return new Date(props.message.created_at as Date).toLocaleString(undefined, {
-          year: '2-digit',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          hour12: false,
-          minute: '2-digit',
-        })
-      }),
-      wordFilter,
-      msgDeletable: computed(() => store.addedMessages),
-      removeMessage,
-    }
-  },
+const store = useMessagesStore()
+const ui = useUiStore()
+
+const removeMessage = async (id: number) => {
+  const success = await store.removeMessage(id)
+  success
+    ? ui.showNotify({ type: 'success', label: 'Správa vymazaná' })
+    : ui.showNotify({ type: 'error', label: 'Niečo sa pokazilo' })
+}
+const msgDeletable = computed(() => store.addedMessages)
+
+const formatedTime = computed(() => {
+  return new Date(props.message.created_at as Date).toLocaleString(undefined, {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+  })
 })
 </script>

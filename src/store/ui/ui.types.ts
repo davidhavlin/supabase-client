@@ -8,6 +8,7 @@ export interface INotify {
 }
 
 export interface IUiState {
+  loading: boolean
   settingsDrawer: boolean
   notify: INotify
 }

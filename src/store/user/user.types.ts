@@ -1,7 +1,8 @@
 export interface IUserState {
-  user: null | IUser
+  user: null | IRegisteredUser
   onlineId: null | number
   onlineUsers: null | IOnlineUser[]
+  activityTimer: null | number
 }
 
 export interface IUser {
@@ -13,7 +14,16 @@ export interface IUser {
 export interface IOnlineUser {
   username: string
   id: number
-  user_id: number | null
+  user_id: string | null
   last_activity: Date
-  session: string
+  session_id: string
+  registered: boolean
+}
+
+export interface IRegisteredUser {
+  id: string
+  username: string
+  color: string
+  icons: null | string[]
+  avatar_url: string | null
 }
