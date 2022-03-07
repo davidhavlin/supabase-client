@@ -6,6 +6,7 @@ import { handleError } from '../../utils/handle-error'
 import { handleLoading } from '../../utils/handle-loading'
 import { useMessagesStore } from '../message/message.store'
 import { IWelcomeMessage } from '../message/message.types'
+import { updateOnlineUser, updateUser } from '../../utils/user-utils'
 
 const GITHUB_SIGN = 'sign-github'
 
@@ -32,6 +33,16 @@ export const useUserStore = defineStore({
         this.setOnlineUser(user)
         this.startReloadInterval()
       }
+    },
+    async updateUser(user: Partial<IRegisteredUser>) {
+      if (!this.user) return
+      handleLoading()
+      const updatedUser = await updateUser(user, this.user.id)
+      if (updatedUser) {
+        this.user = updatedUser
+        updateOnlineUser({ username: updatedUser.username, user_id: this.user.id })
+      }
+      handleLoading(false)
     },
     async tryAgain(): Promise<User | null> {
       return new Promise((resolve) => {
@@ -125,14 +136,14 @@ export const useUserStore = defineStore({
       // }
     },
 
-    async updateOnlineUser(user: IUser) {
-      const { data, error } = await supabase
-        .from('online_users')
-        .update({ last_activity: new Date(), username: user.username })
-        .match({ id: this.onlineId })
+    // async updateOnlineUser(user: IUser) {
+    //   const { data, error } = await supabase
+    //     .from('online_users')
+    //     .update({ last_activity: new Date(), username: user.username })
+    //     .match({ id: this.onlineId })
 
-      handleError(error)
-    },
+    //   handleError(error)
+    // },
 
     async refreshActivity() {
       if (!this.user) return

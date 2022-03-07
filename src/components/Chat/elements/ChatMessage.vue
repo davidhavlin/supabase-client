@@ -8,12 +8,12 @@
           class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
         />
 
-        <div v-if="icons && icons.length > 0">
+        <div v-if="icons && icons.length > 0" class="flex flex-row items-center">
           <i
-            v-for="icon in icons"
+            v-for="(icon, i) in icons"
             :key="`icon-${icon}`"
-            class="text-base w-6 h-6 rounded-md flex items-center justify-center mr-1"
-            :class="[icon, colorClass]"
+            class="text-base w-6 h-6 rounded-md flex items-center justify-center"
+            :class="[icon, colorClass, i && 'mr-1']"
           ></i>
         </div>
         <div class="font-bold" :class="colorClass">{{ message.username }}</div>

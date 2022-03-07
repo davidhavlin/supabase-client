@@ -13,7 +13,7 @@
         >
           <DialogOverlay class="absolute inset-0 bg-slate-700 bg-opacity-75 transition-opacity" />
         </TransitionChild>
-        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+        <div class="fixed inset-y-0 right-0 max-w-full flex">
           <TransitionChild
             as="template"
             enter="transform transition ease-in-out duration-500 sm:duration-700"
@@ -75,7 +75,7 @@
                       </template>
                     </sup-select>
                     <sup-select
-                      v-model="selectedIcon"
+                      v-model="selectedIcons"
                       :options="iconOptions"
                       label="Profile icon"
                       class="mt-4 w-full"
@@ -83,11 +83,21 @@
                       static
                     >
                       <template #option-icon="{ option }">
-                        <div>
+                        <div
+                          class="w-6 h-6 rounded-md flex items-center justify-center text-white bg-primary-def"
+                        >
+                          <i class="text-base" :class="option.value"></i>
+                        </div>
+                      </template>
+                      <template #header-icon="{ values }">
+                        <div class="flex flex-row">
                           <div
+                            v-for="(opt, i) in values"
+                            :key="`option-value-${opt}`"
                             class="w-6 h-6 rounded-md flex items-center justify-center text-white bg-primary-def"
+                            :class="{ 'ml-1': i }"
                           >
-                            <i class="text-base" :class="option.value"></i>
+                            <i class="text-base" :class="opt"></i>
                           </div>
                         </div>
                       </template>
@@ -110,8 +120,8 @@
   </TransitionRoot>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+<script lang="ts" setup>
+import { computed, ref, watch } from 'vue'
 import {
   Dialog,
   DialogOverlay,
@@ -125,65 +135,50 @@ import SupSelect from './SupSelect.vue'
 import { colorOptions } from './data-colors'
 import { iconOptions } from './data-icons'
 import { useUserStore } from '../../../store/user/user.store'
-import { IUser } from '../../../store/user/user.types'
+import { IOption } from '../../Chat/settings/SupSelect.vue'
 
-const icons = [{ value: 'someIcon', label: 'Icon' }]
+const store = useUiStore()
+const userStore = useUserStore()
+const uiStore = useUiStore()
 
-export default defineComponent({
-  name: 'DrawerSettings',
-  components: {
-    Dialog,
-    DialogOverlay,
-    DialogTitle,
-    TransitionChild,
-    TransitionRoot,
-    XIcon,
-    SupSelect,
-  },
-  setup() {
-    const store = useUiStore()
-    const userStore = useUserStore()
-    const uiStore = useUiStore()
+const user = computed(() => userStore.user)
+const username = ref('')
+const selectedColor = ref(colorOptions[0])
+const selectedIcons = ref<string[]>([])
 
-    const user = computed(() => userStore.user)
-    const username = ref(user.value?.username || '')
+watch(
+  () => user.value,
+  (user) => {
+    if (user) {
+      const activeColor = colorOptions.find((opt) => opt.value === user.color)
 
-    const activeColor = colorOptions.find((opt) => opt.value === user.value?.color)
-
-    const selectedColor = ref(activeColor || colorOptions[0])
-    const selectedIcon = ref(iconOptions[0])
-
-    const drawer = computed({
-      get: () => store.settingsDrawer || false, // bez || false, transition place
-      set: (val) => {
-        store.settingsDrawer = val
-      },
-    })
-
-    const onSaveChanges = () => {
-      if (!username.value) return
-
-      const u: IUser = {
-        username: username.value,
-        color: selectedColor.value.value,
-        icons: [selectedIcon.value.value],
-      }
-      console.log({ u })
-      userStore.setUser(u)
-      uiStore.showNotify({ type: 'success', label: 'Profil upravený' })
+      username.value = user.username
+      selectedIcons.value = user.icons || []
+      selectedColor.value = activeColor ? activeColor : colorOptions[0]
     }
+  }
+)
 
-    return {
-      drawer,
-      colorOptions,
-      iconOptions,
-      selectedColor,
-      selectedIcon,
-      username,
-      onSaveChanges,
-    }
+username.value = user.value ? user.value.username : ''
+
+const drawer = computed({
+  get: () => store.settingsDrawer || false, // bez || false, transition place
+  set: (val) => {
+    store.settingsDrawer = val
   },
 })
+
+const onSaveChanges = () => {
+  if (!username.value) return
+
+  const updateUser = {
+    username: username.value,
+    color: selectedColor.value.value,
+    icons: selectedIcons.value,
+  }
+  userStore.updateUser(updateUser)
+  uiStore.showNotify({ type: 'success', label: 'Profil upravený' })
+}
 </script>
 
 <style lang="scss" scoped></style>
