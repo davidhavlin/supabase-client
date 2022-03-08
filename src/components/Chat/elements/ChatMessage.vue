@@ -3,7 +3,7 @@
     <div class="inline-block">
       <div class="flex flex-row items-center">
         <IconRemove
-          v-if="msgDeletable[message.id]"
+          v-if="msgDeletable[message.id] || userStore.user?.role === 'ADMIN'"
           @click="removeMessage(message.id)"
           class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
         />
@@ -33,6 +33,7 @@ import { wordFilter } from '../../../main'
 import { useMessagesStore } from '../../../store/message/message.store'
 import IconRemove from '../../../assets/icons/IconRemove.vue'
 import { useUiStore } from '../../../store/ui/ui.store'
+import { useUserStore } from '../../../store/user/user.store'
 
 interface Props {
   message: Required<IMessage>
@@ -47,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const store = useMessagesStore()
 const ui = useUiStore()
+const userStore = useUserStore()
 
 const removeMessage = async (id: number) => {
   const success = await store.removeMessage(id)

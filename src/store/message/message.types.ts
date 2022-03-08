@@ -1,8 +1,5 @@
 export type TChatMessage = Required<IMessage>
 
-export interface Nieco extends IMessage {}
-
-// export interface IWelcomeMessage extends IMessage {
 export interface IWelcomeMessage extends TChatMessage {
   welcome: boolean
 }

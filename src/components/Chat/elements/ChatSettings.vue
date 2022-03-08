@@ -40,18 +40,26 @@
                 'block w-full px-4 py-2 text-left text-sm',
               ]"
             >
-              Settings
+              Nastavenie
             </button>
           </MenuItem>
           <MenuItem v-slot="{ active }">
-            <a
+            <button
+              @click.stop="toggleHideAnonymMessages"
               href="#"
               :class="[
                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                'block px-4 py-2 text-sm',
+                'px-4 py-2 text-sm w-full flex items-center justify-between',
               ]"
-              >Move</a
             >
+              Schovať anonym správy
+              <input
+                id="checkbox-all"
+                v-model="userStore.hideAnonymMessages"
+                type="checkbox"
+                class="w-4 h-4 text-primary-def bg-gray-100 rounded border-gray-300 focus:ring-primary-def dark:focus:ring-primary-dark dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+            </button>
           </MenuItem>
         </div>
         <div class="py-1">
@@ -63,7 +71,7 @@
                 'block w-full px-4 py-2 text-sm text-left',
               ]"
             >
-              Logout
+              Odhlásiť sa
             </button>
           </MenuItem>
         </div>
@@ -78,6 +86,9 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { useUiStore } from '../../../store/ui/ui.store'
 import { IRegisteredUser } from '../../../store/user/user.types'
 import { useUserStore } from '../../../store/user/user.store'
+import { onMounted, ref } from 'vue'
+
+const STORAGE_KEY = 'hide-anonym-messages'
 
 const props = defineProps<{
   user: IRegisteredUser
@@ -85,4 +96,17 @@ const props = defineProps<{
 
 const uiStore = useUiStore()
 const userStore = useUserStore()
+
+onMounted(() => {
+  const key = localStorage.getItem(STORAGE_KEY)
+  if (key) {
+    userStore.hideAnonymMessages = key === 'hide'
+  }
+})
+
+const toggleHideAnonymMessages = () => {
+  userStore.hideAnonymMessages = !userStore.hideAnonymMessages
+
+  localStorage.setItem(STORAGE_KEY, userStore.hideAnonymMessages ? 'hide' : 'show')
+}
 </script>

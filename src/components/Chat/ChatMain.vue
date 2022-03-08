@@ -1,9 +1,9 @@
 <template>
   <div ref="chatContainerRef" class="chat-container mt-auto relative overflow-y-scroll p-3">
     <div
-      v-for="(message, index) in chatMessages"
+      v-for="(message, index) in filteredMessages"
       :key="`chat-message-${message.id}-${index}`"
-      :class="{ 'last-message': index === chatMessages.length - 1 }"
+      :class="{ 'last-message': index === filteredMessages.length - 1 }"
     >
       <div class="text-slate-600 text-sm" v-if="message.welcome">
         <span class="font-bold"> {{ message.username }}</span> sa pripojil..
@@ -36,11 +36,21 @@ import { useMessagesStore } from '../../store/message/message.store'
 import ChatMessage from './elements/ChatMessage.vue'
 import IconArrow from '../../assets/icons/IconArrow.vue'
 import { TChatMessage } from '../../store/message/message.types'
+import { useUserStore } from '../../store/user/user.store'
 
 const store = useMessagesStore()
+const userStore = useUserStore()
 const chatContainerRef = ref<HTMLElement | null>(null)
 
 const chatMessages = computed(() => store.chatMessages)
+const filteredMessages = computed(() => {
+  return userStore.hideAnonymMessages
+    ? chatMessages.value.filter((msg) => {
+        return !!msg.user_id
+      })
+    : chatMessages.value
+})
+
 const firstLoad = ref(true)
 const scrollOrNotify = (newMessages: TChatMessage[], oldMessages: TChatMessage[]) => {
   if (newMessages.length < oldMessages.length) return

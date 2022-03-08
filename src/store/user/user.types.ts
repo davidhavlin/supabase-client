@@ -3,6 +3,7 @@ export interface IUserState {
   onlineId: null | number
   onlineUsers: null | IOnlineUser[]
   activityTimer: null | number
+  hideAnonymMessages: boolean
 }
 
 export interface IUser {
@@ -26,4 +27,5 @@ export interface IRegisteredUser {
   color: string
   icons: null | string[]
   avatar_url: string | null
+  role: 'USER' | 'ADMIN' | 'MOD'
 }

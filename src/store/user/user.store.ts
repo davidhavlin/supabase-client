@@ -17,6 +17,7 @@ export const useUserStore = defineStore({
     onlineId: null,
     onlineUsers: null,
     activityTimer: null,
+    hideAnonymMessages: false,
   }),
 
   actions: {
@@ -34,6 +35,7 @@ export const useUserStore = defineStore({
         this.startReloadInterval()
       }
     },
+
     async updateUser(user: Partial<IRegisteredUser>) {
       if (!this.user) return
       handleLoading()
@@ -44,6 +46,7 @@ export const useUserStore = defineStore({
       }
       handleLoading(false)
     },
+
     async tryAgain(): Promise<User | null> {
       return new Promise((resolve) => {
         let counter = 0
@@ -68,6 +71,8 @@ export const useUserStore = defineStore({
       const isLogging = window.sessionStorage.getItem(GITHUB_SIGN)
 
       let loggedUser = await supabase.auth.user()
+      console.log('checkIfUserIsLogged', { loggedUser })
+
       if (!loggedUser && isLogging) {
         loggedUser = await this.tryAgain() // TODO REFACTOR
       }
