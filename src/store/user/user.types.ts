@@ -4,6 +4,7 @@ export interface IUserState {
   onlineUsers: null | IOnlineUser[]
   activityTimer: null | number
   hideAnonymMessages: boolean
+  blockedUsers: null | Set<string>
 }
 
 export interface IUser {

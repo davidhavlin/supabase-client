@@ -3,15 +3,13 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount } from 'vue'
-import { supabase } from './plugins/supabase'
+import { onMounted } from 'vue'
 import { useUserStore } from './store/user/user.store'
-import { IUser } from './store/user/user.types'
 
 const STORAGE_KEY = 'chat-user'
 
 const userStore = useUserStore()
-onBeforeMount(async () => {
+onMounted(async () => {
   console.log('ON BEFORE MOUNT')
 
   await userStore.checkIfUserIsLogged()

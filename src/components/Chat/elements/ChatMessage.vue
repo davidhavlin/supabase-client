@@ -1,5 +1,10 @@
 <template>
-  <div class="text-lg text-left text-slate-200 mb-2">
+  <div v-if="blocked" class="italic" id="blocked">
+    Správa od blokovaného uživateľa,
+    <span @click="toggleBlockUser" class="underline cursor-pointer">odblokovať</span>
+  </div>
+
+  <div v-else class="text-lg text-left text-slate-200 mb-2">
     <div class="inline-block">
       <div class="flex flex-row items-center">
         <IconRemove
@@ -16,7 +21,13 @@
             :class="[icon, colorClass, i && 'mr-1']"
           ></i>
         </div>
-        <div class="font-bold" :class="colorClass">{{ message.username }}</div>
+        <chat-user-options
+          :message="message"
+          :colorClass="colorClass"
+          @toggleBlockUser="toggleBlockUser"
+        >
+          <div class="font-bold cursor-pointer" :class="colorClass">{{ message.username }}</div>
+        </chat-user-options>
         <span>:</span>
       </div>
     </div>
@@ -34,6 +45,7 @@ import { useMessagesStore } from '../../../store/message/message.store'
 import IconRemove from '../../../assets/icons/IconRemove.vue'
 import { useUiStore } from '../../../store/ui/ui.store'
 import { useUserStore } from '../../../store/user/user.store'
+import ChatUserOptions from './ChatUserOptions.vue'
 
 interface Props {
   message: Required<IMessage>
@@ -68,4 +80,18 @@ const formatedTime = computed(() => {
     minute: '2-digit',
   })
 })
+
+const blocked = computed(() =>
+  userStore.blockedUsers?.has(props.message.user_id || props.message.username)
+)
+const toggleBlockUser = () => {
+  if (!userStore.blockedUsers) return
+  const blockedUser = props.message.user_id || props.message.username
+  if (userStore.blockedUsers.has(blockedUser)) {
+    userStore.blockedUsers.delete(blockedUser)
+  } else {
+    userStore.blockedUsers.add(blockedUser)
+  }
+  localStorage.setItem('blocked-users', JSON.stringify(Array.from(userStore.blockedUsers)))
+}
 </script>

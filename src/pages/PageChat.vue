@@ -11,9 +11,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onMounted, watch } from 'vue'
+import { onBeforeMount, watch } from 'vue'
 import { useRouter } from 'vue-router'
-// import { useRouter } from 'vue-router'
 import ChatFooter from '../components/Chat/ChatFooter.vue'
 import ChatMain from '../components/Chat/ChatMain.vue'
 import DrawerSettings from '../components/Chat/settings/DrawerSettings.vue'
@@ -24,12 +23,14 @@ const userStore = useUserStore()
 const messageStore = useMessagesStore()
 const router = useRouter()
 
-// const router = useRouter()
 watch(
   () => userStore.user,
   (user) => {
     if (!user) {
       router.push({ name: 'PageWelcome' })
+    } else {
+      const blocked = localStorage.getItem('blocked-users')
+      userStore.blockedUsers = blocked ? new Set([...JSON.parse(blocked)]) : new Set()
     }
   }
 )
@@ -52,12 +53,5 @@ onBeforeMount(async () => {
   listenSupabase()
   await fetchMessages()
   await fetchOnlineUsers()
-})
-
-onMounted(async () => {
-  // if (!userStore.user) {
-  //   router.push({ name: 'PageWelcome' })
-  // }
-  // sessionStorage.setItem('skuska', '111')
 })
 </script>

@@ -18,6 +18,7 @@ export const useUserStore = defineStore({
     onlineUsers: null,
     activityTimer: null,
     hideAnonymMessages: false,
+    blockedUsers: null,
   }),
 
   actions: {
