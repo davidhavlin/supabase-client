@@ -24,7 +24,7 @@
         @click="scrollToBottom"
         class="absolute left-1/2 -translate-x-1/2 bg-slate-500 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer bottom-0 rounded flex flex-row items-center hover:text-white"
       >
-        <span class="block">Nova správa</span> <IconArrow class="ml-1" />
+        <span class="block">Nová správa</span> <IconArrow class="ml-1" />
       </div>
     </transition>
   </div>
@@ -44,11 +44,28 @@ const chatContainerRef = ref<HTMLElement | null>(null)
 
 const chatMessages = computed(() => store.chatMessages)
 const filteredMessages = computed(() => {
+  const arr: TChatMessage[] = []
+
+  let blockUser: string | null = null
+  chatMessages.value.forEach((msg) => {
+    if (isBlocked(msg)) {
+      const identify = msg.user_id || msg.username
+
+      if (!blockUser || blockUser !== identify) {
+        blockUser = identify
+        arr.push(msg)
+      }
+    } else {
+      blockUser = null
+      arr.push(msg)
+    }
+  })
+
   return userStore.hideAnonymMessages
-    ? chatMessages.value.filter((msg) => {
+    ? arr.filter((msg) => {
         return !!msg.user_id
       })
-    : chatMessages.value
+    : arr
 })
 
 const firstLoad = ref(true)
@@ -94,6 +111,10 @@ const scrollToBottom = () => {
   //   top: chatContainerRef.value.scrollHeight,
   //   behavior: 'smooth',
   // })
+}
+
+const isBlocked = (message: TChatMessage) => {
+  return userStore.blockedUsers?.has(message.user_id || message.username)
 }
 
 const SPACE_PADDING = 50

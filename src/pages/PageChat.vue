@@ -29,11 +29,15 @@ watch(
     if (!user) {
       router.push({ name: 'PageWelcome' })
     } else {
-      const blocked = localStorage.getItem('blocked-users')
-      userStore.blockedUsers = blocked ? new Set([...JSON.parse(blocked)]) : new Set()
+      !userStore.blockedUsers && setBlockedUsers()
     }
   }
 )
+
+const setBlockedUsers = () => {
+  const blocked = localStorage.getItem('blocked-users')
+  userStore.blockedUsers = blocked ? new Set([...JSON.parse(blocked)]) : new Set()
+}
 
 const listenSupabase = () => {
   messageStore.listenMessages()
@@ -50,6 +54,7 @@ const fetchOnlineUsers = async () => {
 }
 
 onBeforeMount(async () => {
+  setBlockedUsers()
   listenSupabase()
   await fetchMessages()
   await fetchOnlineUsers()

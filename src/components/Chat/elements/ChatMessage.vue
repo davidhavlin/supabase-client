@@ -1,7 +1,9 @@
 <template>
   <div v-if="blocked" class="italic" id="blocked">
     Správa od blokovaného uživateľa,
-    <span @click="toggleBlockUser" class="underline cursor-pointer">odblokovať</span>
+    <span :title="message.username" @click="toggleBlockUser" class="underline cursor-pointer"
+      >odblokovať</span
+    >
   </div>
 
   <div v-else class="text-lg text-left text-slate-200 mb-2">
