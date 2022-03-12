@@ -7,7 +7,12 @@ export const handleError = (error: PostgrestError | ApiError | null) => {
     handleLoading(false)
     const ui = useUiStore()
 
-    ui.showNotify({ type: 'error', label: error.message })
+    let label = error.message
+    if (label.includes('duplicate key value violates unique constraint')) {
+      label = 'Uživateľ s takým menom už existuje.'
+    }
+
+    ui.showNotify({ type: 'error', label })
     return
   }
 }

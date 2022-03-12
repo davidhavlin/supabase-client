@@ -11,6 +11,7 @@
             id="pretext-input"
             v-model="username"
             class="w-full border font-bold bg-slate-500 focus:bg-white placeholder:text-white px-4 py-2 rounded-lg focus:shadow-outline outline-none"
+            :class="{ 'bg-white': username }"
             type="text"
             placeholder="@nick"
           />
@@ -39,23 +40,28 @@ const router = useRouter()
 const username = ref('')
 
 const user = computed(() => userStore.user)
+const anonymData = ref(null)
 
 const onEntry = () => {
   if (!username.value) return
-  const newUser: IUser = user.value
-    ? { ...user.value, username: username.value }
-    : {
-        username: username.value,
-        color: '',
-        icons: [],
-      }
-  userStore.setUser(newUser)
+  // todo later set up anonym if its in localStorage
+  const anonymUser = {
+    username: username.value,
+    icons: [],
+    color: '',
+  }
 
-  router.push({ name: 'PageChat' })
+  userStore.setAnonymUser(anonymUser)
+  // router.push({ name: 'PageChat' })
 }
 
 onMounted(() => {
   username.value = user.value ? user.value.username : ''
+
+  const data = localStorage.getItem('anonym_user')
+  if (data) {
+    anonymData.value = JSON.parse(data)
+  }
 })
 </script>
 

@@ -1,5 +1,5 @@
 export interface IUserState {
-  user: null | IRegisteredUser
+  user: null | IRegisteredUser | IAnonymUser
   onlineId: null | number
   onlineUsers: null | IOnlineUser[]
   activityTimer: null | number
@@ -23,10 +23,20 @@ export interface IOnlineUser {
 }
 
 export interface IRegisteredUser {
-  id: string
+  id: string // user_id
+  anonym_id?: string
   username: string
   color: string
   icons: null | string[]
   avatar_url: string | null
   role: 'USER' | 'ADMIN' | 'MOD'
+}
+export interface IAnonymUser {
+  id?: string
+  anonym_id: number
+  username: string
+  color: string
+  icons: null | string[]
+  avatar_url: null
+  role: 'USER'
 }

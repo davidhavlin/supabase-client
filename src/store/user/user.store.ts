@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { IOnlineUser, IRegisteredUser, IUser, IUserState } from './user.types'
+import { IAnonymUser, IOnlineUser, IRegisteredUser, IUser, IUserState } from './user.types'
 import { supabase } from '../../plugins/supabase'
-import { SupabaseRealtimePayload, User } from '@supabase/supabase-js'
+import { PostgrestError, SupabaseRealtimePayload, User } from '@supabase/supabase-js'
 import { handleError } from '../../utils/handle-error'
 import { handleLoading } from '../../utils/handle-loading'
 import { useMessagesStore } from '../message/message.store'
@@ -9,6 +9,7 @@ import { IWelcomeMessage } from '../message/message.types'
 import { updateOnlineUser, updateUser } from '../../utils/user-utils'
 
 const GITHUB_SIGN = 'sign-github'
+const SUPABASE_AUTH = 'supabase.auth.token'
 
 export const useUserStore = defineStore({
   id: 'user',
@@ -35,6 +36,30 @@ export const useUserStore = defineStore({
         this.setOnlineUser(user)
         this.startReloadInterval()
       }
+    },
+
+    async setAnonymUser(user: Partial<IAnonymUser>) {
+      const anonymUser = await this.setOnlineUser(user)
+      if (!anonymUser) return
+      console.log({ anonymUser })
+      const { id, username, session_id } = anonymUser
+      const data = {
+        username,
+        anonym_id: id,
+        color: user.color || 'text-red',
+        icons: user.icons || [],
+        session_id,
+      }
+      const anonym: IAnonymUser = {
+        ...data,
+        avatar_url: null,
+        role: 'USER',
+      }
+      localStorage.setItem('anonym_user', JSON.stringify(data))
+      this.user = anonym
+      this.startReloadInterval()
+
+      // if (anonymUser)
     },
 
     async updateUser(user: Partial<IRegisteredUser>) {
@@ -69,7 +94,7 @@ export const useUserStore = defineStore({
 
     async checkIfUserIsLogged() {
       handleLoading(true)
-      const isLogging = window.sessionStorage.getItem(GITHUB_SIGN)
+      const isLogging = sessionStorage.getItem(GITHUB_SIGN) || localStorage.getItem(SUPABASE_AUTH)
 
       let loggedUser = await supabase.auth.user()
       console.log('checkIfUserIsLogged', { loggedUser })
@@ -78,14 +103,13 @@ export const useUserStore = defineStore({
         loggedUser = await this.tryAgain() // TODO REFACTOR
       }
 
-      window.sessionStorage.removeItem(GITHUB_SIGN)
+      sessionStorage.removeItem(GITHUB_SIGN)
 
       if (!loggedUser) {
         handleLoading(false)
 
         return
       }
-      handleLoading(true)
       const { id } = loggedUser
       const { data, error } = await supabase.from<IRegisteredUser>('users').select().match({ id })
       handleError(error)
@@ -95,28 +119,43 @@ export const useUserStore = defineStore({
       handleLoading(false)
     },
 
-    async alreadyOnline(user: IRegisteredUser) {
-      const { data, error } = await supabase
-        .from<IOnlineUser>('online_users')
-        .select()
-        .match({ user_id: user.id })
+    async alreadyOnline(user: Partial<IRegisteredUser | IAnonymUser>) {
+      let res: { data: IOnlineUser[] | null; error: PostgrestError | null } | null = null
+
+      if (user.id) {
+        res = await supabase.from<IOnlineUser>('online_users').select().match({ user_id: user.id })
+      } else if (user.anonym_id) {
+        res = await supabase
+          .from<IOnlineUser>('online_users')
+          .select()
+          .match({ id: user.anonym_id })
+      }
+      if (!res) return
+
+      const { data, error } = res
       handleError(error)
+
+      console.log('alreadyOnline', { user, data, error })
 
       if (data && data[0]) {
         await this.refreshActivity()
-        return true
+        return data[0]
       }
-      return false
+      return null
     },
 
-    async setOnlineUser(user: IRegisteredUser) {
-      if (!this.user) return
+    async setOnlineUser(user: Partial<IRegisteredUser | IAnonymUser>) {
       const alreadyOnline = await this.alreadyOnline(user)
-      if (alreadyOnline) return
+      if (alreadyOnline) {
+        if (!alreadyOnline.registered) {
+          return alreadyOnline
+        }
+        return
+      }
 
       const onlineUser: Partial<IOnlineUser> = {
         last_activity: new Date(),
-        user_id: user.id, // todo later
+        user_id: user.id || null,
         username: user.username,
         registered: !!user.id,
         // session_id: sessionId,
@@ -127,19 +166,9 @@ export const useUserStore = defineStore({
         .insert(onlineUser)
 
       handleError(error)
-      // if (users && users.length) {
-      // const newUser = users[0]
-      // const
-      // sessionStorage.setItem('chat-session', newUser.session_id)
-      // this.user = newUser.username
-      // }
-      // console.log('SET ONLINE USER', { users })
-
-      // sessionStorage.setItem('chat-session', sessionId)
-
-      // if (data) {
-      //   this.onlineId = data[0].id
-      // }
+      if (users && users[0]) {
+        return users[0]
+      }
     },
 
     // async updateOnlineUser(user: IUser) {
@@ -153,10 +182,15 @@ export const useUserStore = defineStore({
 
     async refreshActivity() {
       if (!this.user) return
-      const { data, error } = await supabase
-        .from('online_users')
-        .update({ last_activity: new Date() })
-        .match({ user_id: this.user.id })
+      const { data, error } = this.user.id
+        ? await supabase
+            .from('online_users')
+            .update({ last_activity: new Date() })
+            .match({ user_id: this.user.id })
+        : await supabase
+            .from('online_users')
+            .update({ last_activity: new Date() })
+            .match({ id: this.user.anonym_id })
 
       handleError(error)
     },
@@ -182,8 +216,11 @@ export const useUserStore = defineStore({
     },
 
     async logoutUser() {
-      const { error } = await supabase.auth.signOut()
-      handleError(error)
+      if (this.user && this.user.id) {
+        const { error } = await supabase.auth.signOut()
+        handleError(error)
+      }
+      // todo delete anonym from ls
       this.user = null
     },
 
