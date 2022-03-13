@@ -23,7 +23,14 @@
             </div>
           </MenuItem>
         </div>
-        <div v-if="userStore.user.id !== message.user_id" class="py-1">
+        <div
+          v-if="
+            userStore.user.id !== message.user_id &&
+            userStore.user.anonym_id !== message.anonym_id &&
+            userStore.user.username !== message.username
+          "
+          class="py-1"
+        >
           <MenuItem v-slot="{ active }" @click="$emit('toggleBlockUser')">
             <div class="block cursor-pointer px-4 py-2 text-sm text-slate-400 font-bold">
               Zablokovať uživateľa
@@ -37,7 +44,6 @@
 
 <script lang="ts" setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { computed } from 'vue'
 import { useUserStore } from '../../../store/user/user.store'
 import { IMessage } from '../../../store/message/message.types'
 

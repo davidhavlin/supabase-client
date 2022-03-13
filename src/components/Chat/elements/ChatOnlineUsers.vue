@@ -15,7 +15,7 @@
       leave-to-class="transform opacity-0 scale-95"
     >
       <MenuItems
-        class="origin-bottom-left left-0 -translate-y-full absolute -top-3 mb-4 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none"
+        class="origin-bottom-left left-0 -translate-y-full absolute z-50 -top-3 mb-4 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none"
       >
         <div class="">
           <MenuItem>

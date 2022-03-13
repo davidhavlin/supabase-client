@@ -18,6 +18,7 @@ export interface IMessage {
   created_at?: Date
   id?: number
   user_id: string | null
+  anonym_id: number | null
   content: string
   username: string
   color: string

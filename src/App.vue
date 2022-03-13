@@ -6,22 +6,17 @@
 import { onMounted } from 'vue'
 import { useUserStore } from './store/user/user.store'
 
-const STORAGE_KEY = 'chat-user'
-
 const userStore = useUserStore()
 onMounted(async () => {
-  console.log('ON BEFORE MOUNT')
-
   await userStore.checkIfUserIsLogged()
+
+  if (!userStore.user) {
+    const data = localStorage.getItem('anonym_user')
+    if (data) {
+      userStore.setAnonymUser(JSON.parse(data))
+    }
+  }
 })
-// userStore.$onAction(({ name, args, after, onError }) => {
-//   console.log('Spustila sa USER_STORE akcia s nazvom: ', name, { args })
-//   after((res) => {
-//     if (name === 'setUser') {
-//       localStorage.setItem(STORAGE_KEY, JSON.stringify(res))
-//     }
-//   })
-// })
 </script>
 
 <style>

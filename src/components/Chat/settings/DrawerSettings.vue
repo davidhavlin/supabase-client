@@ -92,13 +92,19 @@
                       <template #header-icon="{ values }">
                         <div class="flex flex-row">
                           <div
-                            v-for="(opt, i) in values"
-                            :key="`option-value-${opt}`"
-                            class="w-6 h-6 rounded-md flex items-center justify-center text-white bg-primary-def"
-                            :class="{ 'ml-1': i }"
+                            v-if="Array.isArray(values) && values.length > 0"
+                            class="flex flex-row"
                           >
-                            <i class="text-base" :class="opt"></i>
+                            <div
+                              v-for="(opt, i) in values"
+                              :key="`option-value-${opt}`"
+                              class="w-6 h-6 rounded-md flex items-center justify-center text-white bg-primary-def"
+                              :class="{ 'ml-1': i }"
+                            >
+                              <i class="text-base" :class="opt"></i>
+                            </div>
                           </div>
+                          <div v-else class="text-slate-500">Vyber si ikonky</div>
                         </div>
                       </template>
                     </sup-select>

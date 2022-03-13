@@ -24,7 +24,7 @@ watch(
   () => user.value,
   (newUser) => {
     console.log({ newUser })
-    router.push({ name: 'PageChat' })
+    newUser && router.push({ name: 'PageChat' })
   }
 )
 const loading = computed(() => uiStore.loading)

@@ -35,21 +35,30 @@ import { IUser } from '../../store/user/user.types'
 
 const STORAGE_KEY = 'chat-user'
 
+interface LocalStorageAnonymUser {
+  username: string
+  anonym_id: number
+  color: string
+  icons: string[]
+  session_id: string
+}
+
 const userStore = useUserStore()
 const router = useRouter()
 const username = ref('')
 
 const user = computed(() => userStore.user)
-const anonymData = ref(null)
+const anonymData = ref<null | LocalStorageAnonymUser>()
 
 const onEntry = () => {
   if (!username.value) return
   // todo later set up anonym if its in localStorage
   const anonymUser = {
+    ...anonymData.value,
     username: username.value,
-    icons: [],
-    color: '',
   }
+
+  console.log({ anonymUser })
 
   userStore.setAnonymUser(anonymUser)
   // router.push({ name: 'PageChat' })
@@ -60,7 +69,9 @@ onMounted(() => {
 
   const data = localStorage.getItem('anonym_user')
   if (data) {
-    anonymData.value = JSON.parse(data)
+    anonymData.value = JSON.parse(data) as LocalStorageAnonymUser
+    username.value = anonymData.value.username
+    userStore.setAnonymUser(anonymData.value)
   }
 })
 </script>

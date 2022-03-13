@@ -46,7 +46,7 @@ export const useUserStore = defineStore({
       const data = {
         username,
         anonym_id: id,
-        color: user.color || 'text-red',
+        color: user.color || 'red-500',
         icons: user.icons || [],
         session_id,
       }
@@ -65,10 +65,15 @@ export const useUserStore = defineStore({
     async updateUser(user: Partial<IRegisteredUser>) {
       if (!this.user) return
       handleLoading()
-      const updatedUser = await updateUser(user, this.user.id)
-      if (updatedUser) {
-        this.user = updatedUser
-        updateOnlineUser({ username: updatedUser.username, user_id: this.user.id })
+      if (this.user.id) {
+        const updatedUser = await updateUser(user, this.user.id)
+        if (updatedUser) {
+          this.user = updatedUser
+          updateOnlineUser({ username: updatedUser.username, user_id: this.user.id })
+        }
+      } else if (this.user.anonym_id) {
+        // TODO
+        // updateOnlineUser({ username: user.username, anonym_id: this.user.id })
       }
       handleLoading(false)
     },
@@ -97,7 +102,6 @@ export const useUserStore = defineStore({
       const isLogging = sessionStorage.getItem(GITHUB_SIGN) || localStorage.getItem(SUPABASE_AUTH)
 
       let loggedUser = await supabase.auth.user()
-      console.log('checkIfUserIsLogged', { loggedUser })
 
       if (!loggedUser && isLogging) {
         loggedUser = await this.tryAgain() // TODO REFACTOR
@@ -114,7 +118,6 @@ export const useUserStore = defineStore({
       const { data, error } = await supabase.from<IRegisteredUser>('users').select().match({ id })
       handleError(error)
       const user = data ? data[0] : null
-      // const session = await supabase.auth.session()
       this.setUser(user)
       handleLoading(false)
     },
@@ -221,12 +224,12 @@ export const useUserStore = defineStore({
         handleError(error)
       }
       // todo delete anonym from ls
+      localStorage.removeItem('anonym_user')
       this.user = null
     },
 
     startReloadInterval() {
       this.activityTimer = window.setTimeout(() => {
-        console.log('SETTING ACTIVITY')
         this.refreshActivity()
         this.startReloadInterval()
       }, 1000 * 60 * 4)

@@ -11,6 +11,11 @@
           <img :src="user.avatar_url" />
         </div>
       </div>
+      <div v-else class="avatar uppercase font-bold">
+        <div class="w-10 mask mask-squircle !flex items-center justify-center bg-slate-400 text-xl">
+          {{ user.username[0] }}
+        </div>
+      </div>
     </MenuButton>
 
     <transition

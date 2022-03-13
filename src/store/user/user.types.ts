@@ -24,7 +24,7 @@ export interface IOnlineUser {
 
 export interface IRegisteredUser {
   id: string // user_id
-  anonym_id?: string
+  anonym_id?: number
   username: string
   color: string
   icons: null | string[]

@@ -68,7 +68,8 @@ const addMessage = () => {
     content: message.value,
     icons: userStore.user.icons || [],
     username: userStore.user.username,
-    user_id: userStore.user.id,
+    user_id: userStore.user.id || null,
+    anonym_id: userStore.user.anonym_id || null,
     color: userStore.user.color,
   }
   if (!message.value) return

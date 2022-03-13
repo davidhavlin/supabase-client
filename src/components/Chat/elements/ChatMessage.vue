@@ -10,7 +10,7 @@
     <div class="inline-block">
       <div class="flex flex-row items-center">
         <IconRemove
-          v-if="msgDeletable[message.id] || userStore.user?.role === 'ADMIN'"
+          v-if="showRemoveIcon"
           @click="removeMessage(message.id)"
           class="w-4 h-4 cursor-pointer text-slate-600 hover:text-red-500 mr-1"
         />
@@ -33,7 +33,11 @@
         <span>:</span>
       </div>
     </div>
-    <span class="ml-3 inline font-medium text-left tooltip" :data-tip="formatedTime">
+    <span
+      class="ml-3 inline font-medium text-left tooltip"
+      :class="{ 'align-top': showRemoveIcon }"
+      :data-tip="formatedTime"
+    >
       {{ wordFilter.clean(message.content) }}
     </span>
   </div>
@@ -96,4 +100,8 @@ const toggleBlockUser = () => {
   }
   localStorage.setItem('blocked-users', JSON.stringify(Array.from(userStore.blockedUsers)))
 }
+
+const showRemoveIcon = computed(
+  () => msgDeletable.value[props.message.id] || userStore.user?.role === 'ADMIN'
+)
 </script>
