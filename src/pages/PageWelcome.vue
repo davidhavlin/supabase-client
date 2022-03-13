@@ -30,6 +30,8 @@ watch(
 const loading = computed(() => uiStore.loading)
 onBeforeMount(() => {
   if (user.value) {
+    console.log('toto?')
+
     router.push({ name: 'PageChat' })
   }
 })

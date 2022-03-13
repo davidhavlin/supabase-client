@@ -1,12 +1,24 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { IAnonymUser, IOnlineUser, IRegisteredUser, IUser, IUserState } from './user.types'
+import {
+  EStorageKey,
+  IAnonymUser,
+  IOnlineUser,
+  IRegisteredUser,
+  IUser,
+  IUserState,
+} from './user.types'
 import { supabase } from '../../plugins/supabase'
 import { PostgrestError, SupabaseRealtimePayload, User } from '@supabase/supabase-js'
 import { handleError } from '../../utils/handle-error'
 import { handleLoading } from '../../utils/handle-loading'
 import { useMessagesStore } from '../message/message.store'
 import { IWelcomeMessage } from '../message/message.types'
-import { updateOnlineUser, updateUser } from '../../utils/user-utils'
+import {
+  anonymUserToStorage,
+  removeOnlineUser,
+  updateOnlineUser,
+  updateUser,
+} from '../../utils/user-utils'
 
 const GITHUB_SIGN = 'sign-github'
 const SUPABASE_AUTH = 'supabase.auth.token'
@@ -72,8 +84,12 @@ export const useUserStore = defineStore({
           updateOnlineUser({ username: updatedUser.username, user_id: this.user.id })
         }
       } else if (this.user.anonym_id) {
-        // TODO
-        // updateOnlineUser({ username: user.username, anonym_id: this.user.id })
+        updateOnlineUser({ username: user.username, id: this.user.anonym_id })
+        this.user = {
+          ...this.user,
+          ...user,
+        }
+        anonymUserToStorage(this.user)
       }
       handleLoading(false)
     },
@@ -174,15 +190,6 @@ export const useUserStore = defineStore({
       }
     },
 
-    // async updateOnlineUser(user: IUser) {
-    //   const { data, error } = await supabase
-    //     .from('online_users')
-    //     .update({ last_activity: new Date(), username: user.username })
-    //     .match({ id: this.onlineId })
-
-    //   handleError(error)
-    // },
-
     async refreshActivity() {
       if (!this.user) return
       const { data, error } = this.user.id
@@ -223,8 +230,8 @@ export const useUserStore = defineStore({
         const { error } = await supabase.auth.signOut()
         handleError(error)
       }
-      // todo delete anonym from ls
-      localStorage.removeItem('anonym_user')
+      removeOnlineUser(this.user)
+      // localStorage.removeItem(EStorageKey.ANONYM_USER)
       this.user = null
     },
 
@@ -247,6 +254,7 @@ export const useUserStore = defineStore({
             id: newOnlineUser.id,
             created_at: newOnlineUser.last_activity,
             user_id: newOnlineUser.user_id,
+            anonym_id: newOnlineUser.id,
             content: '',
             color: '',
             icons: null,
@@ -270,12 +278,14 @@ export const useUserStore = defineStore({
             }
           }
         )
-        .on(
-          'UPDATE',
-          async ({ new: newUpdatedOnlineUser }: SupabaseRealtimePayload<IOnlineUser>) => {
-            console.log('UPDATE online user!', { newUpdatedOnlineUser })
+        .on('UPDATE', async ({ new: updatedOnlineUser }: SupabaseRealtimePayload<IOnlineUser>) => {
+          if (!this.onlineUsers) return
+          const index = this.onlineUsers.findIndex((u) => u.id === updatedOnlineUser.id)
+          this.onlineUsers[index] = {
+            ...this.onlineUsers[index],
+            username: updatedOnlineUser.username,
           }
-        )
+        })
         .subscribe()
     },
   },

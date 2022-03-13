@@ -1,6 +1,6 @@
 <template>
   <div class="max-h-screen overflow-hidden h-full bg-gray-900 flex flex-col justify-end">
-    <div class="h-full">
+    <div class="h-full flex justify-center items-end">
       <router-view></router-view>
     </div>
 

@@ -162,7 +162,8 @@ watch(
       selectedIcons.value = user.icons || []
       selectedColor.value = activeColor ? activeColor : colorOptions[0]
     }
-  }
+  },
+  { immediate: true }
 )
 
 username.value = user.value ? user.value.username : ''
