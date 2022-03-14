@@ -3,7 +3,10 @@
     <div
       v-for="(message, index) in filteredMessages"
       :key="`chat-message-${message.id}-${index}`"
-      :class="{ 'last-message': index === filteredMessages.length - 1 }"
+      :class="{
+        'last-message': index === filteredMessages.length - 1,
+        'first-message': index === 0,
+      }"
     >
       <div class="text-slate-600 text-sm" v-if="message.welcome">
         <span class="font-bold"> {{ message.username }}</span> sa pripojil..
@@ -18,14 +21,22 @@
     </div>
   </div>
   <div class="over-chat pointer-events-none absolute top-0 left-0 w-full h-full">
+    <button
+      v-show="true"
+      @click="scrollToBottom"
+      class="absolute left-1/2 -translate-x-1/2 bg-indigo-700 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer top-0 rounded flex flex-row items-center text-slate-900 hover:text-white"
+    >
+      <span class="block">Načítať staršie správy</span> <IconLoad class="ml-1" />
+    </button>
     <transition name="fade">
-      <div
-        v-show="newMessageAlert"
+      <!-- v-show="newMessageAlert" -->
+      <button
+        v-show="true"
         @click="scrollToBottom"
-        class="absolute left-1/2 -translate-x-1/2 bg-slate-500 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer bottom-0 rounded flex flex-row items-center hover:text-white"
+        class="absolute left-1/2 -translate-x-1/2 bg-indigo-700 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer bottom-0 rounded flex flex-row items-center text-slate-900 hover:text-white"
       >
         <span class="block">Nová správa</span> <IconArrow class="ml-1" />
-      </div>
+      </button>
     </transition>
   </div>
 </template>
@@ -37,6 +48,7 @@ import ChatMessage from './elements/ChatMessage.vue'
 import IconArrow from '../../assets/icons/IconArrow.vue'
 import { TChatMessage } from '../../store/message/message.types'
 import { useUserStore } from '../../store/user/user.store'
+import IconLoad from '../../assets/icons/IconLoad.vue'
 
 const store = useMessagesStore()
 const userStore = useUserStore()
@@ -129,11 +141,64 @@ onMounted(() => {
   //   scrollToBottom() // TODO
   // })
 })
+const viewLocation = ref<'TOP' | 'BOTTOM' | 'CENTER' | null>(null)
+const observer = ref<IntersectionObserver | null>(null)
+const setObserver = () => {
+  let options = {
+    root: chatContainerRef.value,
+    rootMargin: '0px 0px 100px 0px',
+    threshold: 1,
+  }
+
+  observer.value = new IntersectionObserver((entries, observer) => {
+    console.log('wtf', entries)
+    for (const { target, isIntersecting, intersectionRatio } of entries) {
+      if (target.className === 'last-message' && isIntersecting) {
+        console.log('POSLEDNA', { isIntersecting, intersectionRatio })
+        viewLocation.value = 'BOTTOM'
+      } else if (target.className === 'first-message' && isIntersecting) {
+        console.log('PRVA', { isIntersecting, intersectionRatio })
+        viewLocation.value = 'TOP'
+      } else {
+        viewLocation.value = 'CENTER'
+      }
+    }
+  }, options)
+
+  console.log('observer is set', observer.value)
+}
+const skuska = () => {
+  console.log('skuska', observer.value)
+
+  if (!observer.value) return
+  const first = document.querySelector('.first-message')
+  const last = document.querySelector('.last-message')
+  console.log({ first, last })
+
+  first && observer.value.observe(first)
+  last && observer.value.observe(last)
+}
+watch(
+  () => filteredMessages.value,
+  (msgs) => {
+    console.log({ msgs })
+    if (observer.value) {
+      observer.value.disconnect()
+    }
+    nextTick(() => {
+      if (msgs.length === 0) return
+
+      setObserver()
+      skuska()
+    })
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
 .over-chat {
-  height: calc(100% - 150px);
+  /* height: calc(100% - 150px); */
 }
 .chat-container::-webkit-scrollbar {
   width: 10px;

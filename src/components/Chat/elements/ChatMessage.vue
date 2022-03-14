@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { IMessage } from '../../../store/message/message.types'
 import { wordFilter } from '../../../main'
 import { useMessagesStore } from '../../../store/message/message.store'

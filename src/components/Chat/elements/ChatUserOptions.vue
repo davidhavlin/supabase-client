@@ -1,6 +1,15 @@
 <template>
-  <Menu as="div" class="relative inline-block text-left z-50">
-    <MenuButton class="z-10 relative flex items-center focus:outline-none select-none">
+  <Menu
+    v-slot="{ open }"
+    as="div"
+    class="relative inline-block text-left z-50"
+    :class="{ 'z-[60]': visiblePopup }"
+  >
+    <MenuButton
+      ref="userBtnRef"
+      class="z-10 relative flex items-center focus:outline-none select-none"
+      @click="handleClick"
+    >
       <slot></slot>
     </MenuButton>
 
@@ -11,9 +20,16 @@
       leave-active-class="transition ease-in duration-75"
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
+      @before-enter="visiblePopup = true"
+      @after-leave="visiblePopup = false"
     >
       <MenuItems
-        class="origin-bottom-left left-0 -translate-y-full absolute -top-3 mb-4 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none"
+        class="left-0 z-50 absolute w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none"
+        :class="[
+          noSpaceForTooltip
+            ? 'origin-top-left translate-y-7 top-0'
+            : 'origin-bottom-left -translate-y-full -top-1',
+        ]"
         v-if="userStore.user"
       >
         <div class="">
@@ -46,7 +62,9 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { useUserStore } from '../../../store/user/user.store'
 import { IMessage } from '../../../store/message/message.types'
+import { onMounted, ref } from 'vue'
 
+const emit = defineEmits(['toggleBlockUser'])
 const userStore = useUserStore()
 
 const props = defineProps<{
@@ -54,5 +72,17 @@ const props = defineProps<{
   colorClass: string
 }>()
 
-const emit = defineEmits(['toggleBlockUser'])
+const userBtnRef = ref<null | any>(null)
+const noSpaceForTooltip = ref(false)
+const visiblePopup = ref(false)
+
+const handleClick = () => {
+  if (!userBtnRef.value) return
+  const { top } = userBtnRef.value.$el.getBoundingClientRect()
+  noSpaceForTooltip.value = top < 100
+}
+
+onMounted(() => {
+  // console.log('user btn ref', userBtnRef.value)
+})
 </script>
