@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-6xl mx-auto flex flex-col w-full h-[calc(100%-44px)]">
+  <main class="max-w-6xl mx-auto flex flex-col w-full relative h-[calc(100%-44px)]">
     <chat-main />
 
     <chat-footer />

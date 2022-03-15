@@ -2,12 +2,14 @@ import { SupabaseRealtimePayload } from '@supabase/supabase-js'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../../plugins/supabase'
 import { handleError } from '../../utils/handle-error'
+import { handleLoading } from '../../utils/handle-loading'
 import { IMessage, IMessagesState, TChatMessage } from './message.types'
 
 export const useMessagesStore = defineStore({
   id: 'messages',
   state: (): IMessagesState => ({
     chatMessages: [],
+    countAllMessages: 0,
     addedMessages: {},
     afterMessageCounter: 0,
     counterTimeout: null,
@@ -15,19 +17,40 @@ export const useMessagesStore = defineStore({
 
   actions: {
     async fetchMessages() {
-      try {
-        const { data: messages, error } = await supabase
-          .from<TChatMessage>('messages')
-          .select()
-          .order('created_at', { ascending: false })
-          .limit(30)
-        if (!messages) return
+      const {
+        data: messages,
+        error,
+        count,
+      } = await supabase
+        .from<TChatMessage>('messages')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .limit(30)
+      if (!messages) return
+      this.countAllMessages = count || 0
 
-        this.chatMessages = messages.reverse()
-      } catch (error) {
-        console.log(error)
-      }
+      this.chatMessages = messages.reverse()
+      console.log(error)
     },
+
+    async fetchMoreMessages() {
+      handleLoading()
+      const [last] = this.chatMessages
+
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select()
+        .lt('id', last.id)
+        .order('created_at', { ascending: false })
+        .limit(30)
+
+      handleError(error)
+
+      if (!messages) return
+      this.chatMessages = [...messages.reverse(), ...this.chatMessages]
+      handleLoading(false)
+    },
+
     listenMessages() {
       const msgSubscription = supabase
         .from('messages')

@@ -9,6 +9,7 @@ export interface IMessagesState {
   addedMessages: {
     [key: number]: boolean
   }
+  countAllMessages: number
   afterMessageCounter: number
   counterTimeout: null | number
 }

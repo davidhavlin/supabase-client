@@ -6,6 +6,7 @@
       :class="{
         'last-message': index === filteredMessages.length - 1,
         'first-message': index === 0,
+        'before-loaded-message': index === beforeIndex,
       }"
     >
       <div class="text-slate-600 text-sm" v-if="message.welcome">
@@ -20,19 +21,20 @@
       />
     </div>
   </div>
-  <div class="over-chat pointer-events-none absolute top-0 left-0 w-full h-full">
-    <button
-      v-show="true"
-      @click="scrollToBottom"
-      class="absolute left-1/2 -translate-x-1/2 bg-indigo-700 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer top-0 rounded flex flex-row items-center text-slate-900 hover:text-white"
-    >
-      <span class="block">Načítať staršie správy</span> <IconLoad class="ml-1" />
-    </button>
+  <div class="over-chat mt-3 h-[calc(100%-110px)] pointer-events-none absolute top-0 left-0 w-full">
     <transition name="fade">
-      <!-- v-show="newMessageAlert" -->
       <button
-        v-show="true"
-        @click="scrollToBottom"
+        v-show="showLoadMore"
+        @click="loadMoreMessages"
+        class="absolute left-1/2 -translate-x-1/2 bg-indigo-700 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer top-0 rounded flex flex-row items-center text-slate-900 hover:text-white"
+      >
+        <span class="block">Načítať staršie správy</span> <IconLoad class="ml-1" />
+      </button>
+    </transition>
+    <transition name="fade">
+      <button
+        v-show="newMessageAlert"
+        @click="scrollToEl('last-message')"
         class="absolute left-1/2 -translate-x-1/2 bg-indigo-700 text-sm font-bold px-1 py-1 pointer-events-auto cursor-pointer bottom-0 rounded flex flex-row items-center text-slate-900 hover:text-white"
       >
         <span class="block">Nová správa</span> <IconArrow class="ml-1" />
@@ -54,6 +56,19 @@ const store = useMessagesStore()
 const userStore = useUserStore()
 const chatContainerRef = ref<HTMLElement | null>(null)
 
+const beforeCount = ref<null | number>(null)
+const beforeIndex = computed(() => {
+  if (!beforeCount.value) return null
+  return store.chatMessages.length - beforeCount.value
+})
+const loadMoreMessages = async () => {
+  beforeCount.value = store.chatMessages.length
+  await store.fetchMoreMessages()
+  nextTick(() => {
+    scrollToEl('before-loaded-message', 'auto', 'center')
+  })
+}
+
 const chatMessages = computed(() => store.chatMessages)
 const filteredMessages = computed(() => {
   const arr: TChatMessage[] = []
@@ -73,11 +88,7 @@ const filteredMessages = computed(() => {
     }
   })
 
-  return userStore.hideAnonymMessages
-    ? arr.filter((msg) => {
-        return !!msg.user_id
-      })
-    : arr
+  return userStore.hideAnonymMessages ? arr.filter((msg) => !!msg.user_id) : arr
 })
 
 const firstLoad = ref(true)
@@ -86,13 +97,13 @@ const scrollOrNotify = (newMessages: TChatMessage[], oldMessages: TChatMessage[]
   if (!newMessages) return
   nextTick(() => {
     if (firstLoad.value) {
-      scrollToBottom()
+      scrollToEl('last-message')
       return
     }
-    if (isChatMoreScrolled()) {
+    if (viewLocation.value !== 'BOTTOM') {
       showNewMessageAlert()
     } else {
-      scrollToBottom()
+      scrollToEl('last-message')
     }
   })
 }
@@ -109,38 +120,23 @@ const showNewMessageAlert = () => {
   }, ALERT_DURATION)
 }
 
-const scrollToBottom = () => {
-  const lastItem = document.querySelector('.last-message')
-  // console.log('scrollToBottom', chatContainerRef.value, lastItem, chatMessages.value)
+const scrollToEl = (
+  className: string,
+  behavior: ScrollBehavior = 'smooth',
+  block: ScrollLogicalPosition = 'start'
+) => {
+  const lastItem = document.querySelector(`.${className}`)
   if (lastItem) {
     firstLoad.value = false
-    lastItem.scrollIntoView({ behavior: 'smooth' })
+    lastItem.scrollIntoView({ behavior, block })
   }
-
-  // if (!chatContainerRef.value) return
   newMessageAlert.value = false
-  // chatContainerRef.value.scrollTo({
-  //   top: chatContainerRef.value.scrollHeight,
-  //   behavior: 'smooth',
-  // })
 }
 
 const isBlocked = (message: TChatMessage) => {
   return userStore.blockedUsers?.has(message.user_id || message.username)
 }
 
-const SPACE_PADDING = 50
-const isChatMoreScrolled = () => {
-  const el = chatContainerRef.value
-  if (!el) return
-  return el.scrollHeight - el.scrollTop - SPACE_PADDING > el.clientHeight
-}
-
-onMounted(() => {
-  // nextTick(() => {
-  //   scrollToBottom() // TODO
-  // })
-})
 const viewLocation = ref<'TOP' | 'BOTTOM' | 'CENTER' | null>(null)
 const observer = ref<IntersectionObserver | null>(null)
 const setObserver = () => {
@@ -151,29 +147,24 @@ const setObserver = () => {
   }
 
   observer.value = new IntersectionObserver((entries, observer) => {
-    console.log('wtf', entries)
     for (const { target, isIntersecting, intersectionRatio } of entries) {
       if (target.className === 'last-message' && isIntersecting) {
-        console.log('POSLEDNA', { isIntersecting, intersectionRatio })
         viewLocation.value = 'BOTTOM'
       } else if (target.className === 'first-message' && isIntersecting) {
-        console.log('PRVA', { isIntersecting, intersectionRatio })
         viewLocation.value = 'TOP'
       } else {
         viewLocation.value = 'CENTER'
       }
     }
   }, options)
-
-  console.log('observer is set', observer.value)
 }
-const skuska = () => {
-  console.log('skuska', observer.value)
-
+const showLoadMore = computed(
+  () => viewLocation.value === 'TOP' && store.chatMessages.length < store.countAllMessages
+)
+const observeElements = () => {
   if (!observer.value) return
   const first = document.querySelector('.first-message')
   const last = document.querySelector('.last-message')
-  console.log({ first, last })
 
   first && observer.value.observe(first)
   last && observer.value.observe(last)
@@ -181,7 +172,6 @@ const skuska = () => {
 watch(
   () => filteredMessages.value,
   (msgs) => {
-    console.log({ msgs })
     if (observer.value) {
       observer.value.disconnect()
     }
@@ -189,7 +179,7 @@ watch(
       if (msgs.length === 0) return
 
       setObserver()
-      skuska()
+      observeElements()
     })
   },
   { immediate: true }
@@ -197,12 +187,8 @@ watch(
 </script>
 
 <style scoped>
-.over-chat {
-  /* height: calc(100% - 150px); */
-}
 .chat-container::-webkit-scrollbar {
   width: 10px;
-  /* height: 20px; */
 }
 
 .chat-container::-webkit-scrollbar-track {
