@@ -9,7 +9,15 @@
           <IconChat class="text-white" />
         </div>
         <div class="flex-1">
-          <chat-input v-model="message" @addMessage="addMessage" />
+          <chat-user-completion v-if="showCompletion" ref="completionRef" />
+          <chat-input class="chat-input" v-model="message" @addMessage="addMessage" />
+          <div
+            @input="onInput"
+            class="flex flex-row items-center justify-start"
+            contenteditable="true"
+          >
+            <span class="ghost-element"></span>
+          </div>
         </div>
       </div>
       <div class="flex flex-row justify-between flex-nowrap mt-2 text-slate-700">
@@ -34,11 +42,12 @@
         </div>
       </div>
     </div>
+    test: {{ test }}
   </footer>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import IconChat from '../../assets/icons/IconChat.vue'
 import ChatSettings from './elements/ChatSettings.vue'
 import ChatInput from './elements/ChatInput.vue'
@@ -47,14 +56,34 @@ import { useUserStore } from '../../store/user/user.store'
 import { IMessage } from '../../store/message/message.types'
 import { useUiStore } from '../../store/ui/ui.store'
 import ChatOnlineUsers from './elements/ChatOnlineUsers.vue'
+import ChatUserCompletion from './ChatUserCompletion.vue'
 
 const msgStore = useMessagesStore()
 const userStore = useUserStore()
 const ui = useUiStore()
 
+const completionRef = ref(null)
+
 const onlineUsersCount = computed(() => (userStore.onlineUsers ? userStore.onlineUsers.length : 0))
 
+const onInput = (e: Event) => {
+  const el = e.target as HTMLElement
+  console.log('ON INPUT', el.innerText)
+}
 const message = ref('')
+const test = computed(() => {
+  const w = message.value.match(/(?:@)(\w+)/g)
+  return w
+})
+const showCompletion = ref(false)
+watch(message, (msg, oldMsg) => {
+  if (msg[msg.length - 1] === '@') {
+    showCompletion.value = true
+  }
+  if (msg[msg.length - 1] === ' ') {
+    showCompletion.value = false
+  }
+})
 
 const disableCounter = computed(() => msgStore.afterMessageCounter)
 
@@ -76,4 +105,35 @@ const addMessage = () => {
   msgStore.createMessage(newMsg)
   message.value = ''
 }
+
+function getCaretGlobalPosition() {
+  const r = document.getSelection()?.getRangeAt(0)
+  if (!r) return
+  const node = r.startContainer
+  const offset = r.startOffset
+  const pageOffset = { x: window.pageXOffset, y: window.pageYOffset }
+  let rect, r2
+
+  if (offset > 0) {
+    r2 = document.createRange()
+    r2.setStart(node, offset - 1)
+    r2.setEnd(node, offset)
+    rect = r2.getBoundingClientRect()
+    return { left: rect.right + pageOffset.x, top: rect.bottom + pageOffset.y }
+  }
+}
+const inputRef = ref<HTMLInputElement | null>(null)
+
+onMounted(() => {
+  const input = document.querySelector('.chat-input') as HTMLInputElement
+  if (!input) return
+
+  input.addEventListener('input', () => {
+    const caretGlobalPosition = getCaretGlobalPosition()
+    console.log({ caretGlobalPosition }, input.selectionStart)
+
+    // infoElm.style.cssText = `top:${caretGlobalPosition.top}px;
+    //                          left:${caretGlobalPosition.left}px;`
+  })
+})
 </script>

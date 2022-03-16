@@ -17,6 +17,7 @@ export const useMessagesStore = defineStore({
 
   actions: {
     async fetchMessages() {
+      handleLoading()
       const {
         data: messages,
         error,
@@ -26,11 +27,12 @@ export const useMessagesStore = defineStore({
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .limit(30)
+      handleError(error)
       if (!messages) return
       this.countAllMessages = count || 0
 
       this.chatMessages = messages.reverse()
-      console.log(error)
+      handleLoading(false)
     },
 
     async fetchMoreMessages() {
