@@ -10,11 +10,11 @@
     >
       <MenuItems
         static
-        class="origin-bottom-left left-0 -translate-y-full absolute z-50 -top-3 mb-4 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none"
+        class="origin-bottom-left left-0 -translate-y-full absolute z-50 -top-3 mb-4 w-56 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-700 focus:outline-none overflow-hidden"
       >
-        <div class="">
+        <div tabindex="1" v-click-outside="() => $emit('closePopup')">
           <MenuItem
-            v-for="user in onlineUsers"
+            v-for="user in availableUsers"
             :key="`online-user-${user.user_id}`"
             @click.stop="onClickOption(user.username)"
           >
@@ -35,11 +35,24 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { computed } from 'vue'
 import { useUserStore } from '../../store/user/user.store'
 
-const emit = defineEmits(['selectOption'])
+const emit = defineEmits(['selectOption', 'closePopup'])
+const props = defineProps({
+  userCompletion: { type: String, default: null },
+})
 
 const store = useUserStore()
 
-const onlineUsers = computed(() => store.onlineUsers)
+const availableUsers = computed(() => {
+  if (!store.onlineUsers || !store.user) return null
+  return store.onlineUsers?.filter((onlineUser) => {
+    const username = onlineUser.username.toLowerCase()
+    const completion = props.userCompletion && props.userCompletion.toLowerCase()
+    if (onlineUser.user_id === store.user?.id || username === store.user?.username.toLowerCase())
+      return false
+    if (completion) return username.includes(completion)
+    return true
+  })
+})
 
 const onClickOption = (username: string) => {
   emit('selectOption', username)

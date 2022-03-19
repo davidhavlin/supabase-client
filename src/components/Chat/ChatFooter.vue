@@ -34,7 +34,6 @@
         </div>
       </div>
     </div>
-    test: {{ test }}
   </footer>
 </template>
 
@@ -56,10 +55,6 @@ const ui = useUiStore()
 const onlineUsersCount = computed(() => (userStore.onlineUsers ? userStore.onlineUsers.length : 0))
 
 const message = ref('')
-const test = computed(() => {
-  const w = message.value.match(/(?:@)(\w+)/g)
-  return w
-})
 
 const disableCounter = computed(() => msgStore.afterMessageCounter)
 

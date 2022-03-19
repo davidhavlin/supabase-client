@@ -1,24 +1,26 @@
 <template>
   <chat-user-completion
+    v-if="showCompletion"
     :style="{ left: leftPopup + 'px' }"
-    v-show="showCompletion"
-    @selectOption="onSelectOption"
+    :userCompletion="userCompletion"
+    @select-option="onSelectOption"
+    @close-popup="showCompletion = false"
   />
   <div
     ref="customInputRef"
     @input="onInput"
-    @blur="onBlur"
     class="flex selection:bg-indigo-700 h-full text-left flex-row items-center justify-start w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-transparent focus:bg-slate-800 px-4 py-2 rounded-r focus:shadow-outline outline-none"
     contenteditable="true"
     spellcheck="false"
     placeholder="Odoslať správu"
   >
-    <span ref="ghostRef" v-if="innerValue" class="ghost-element"></span>
+    <!-- <span v-if="innerValue" class="ghost-element"></span> -->
   </div>
+  {{ userCompletion }}
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import ChatUserCompletion from '../ChatUserCompletion.vue'
 
 const props = defineProps({
@@ -27,10 +29,19 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const customInputRef = ref<HTMLElement | null>(null)
 
-const skuska = () => {
-  if (!customInputRef.value) return
-  customInputRef.value.innerText = 'kokot'
-}
+onMounted(() => {
+  createGhostSpan()
+})
+
+const userCompletion = computed(() => {
+  const lastChar = innerValue.value[innerValue.value.length - 1]
+  if ([' ', '@'].includes(lastChar) || lastChar === String.fromCharCode(160)) return undefined
+  return innerValue.value
+    .match(/(?:@)(\w+)/g)
+    ?.pop()
+    ?.substring(1)
+    .toLowerCase()
+})
 
 const innerValue = computed({
   get: () => props.modelValue,
@@ -38,23 +49,46 @@ const innerValue = computed({
 })
 
 const onInput = (e: Event) => {
-  console.log(' on input')
-
   const el = e.target as HTMLElement
   innerValue.value = el.innerText
 }
 
-const onBlur = () => {
-  setTimeout(() => {
-    showCompletion.value = false
-  }, 100)
+const createGhostSpan = () => {
+  const span = document.createElement('span')
+  span.classList.add('ghost-element')
+
+  customInputRef.value?.appendChild(span)
+}
+
+const focusCustomInput = () => {
+  const el = customInputRef.value
+  if (!el) return
+
+  el.focus()
+  const range = document.createRange()
+  range.selectNodeContents(el)
+  range.collapse()
+  const sel = window.getSelection()
+  if (!sel) return
+  sel.removeAllRanges()
+  sel.addRange(range)
 }
 
 const onSelectOption = (username: string) => {
+  let addedWord = username.toLowerCase()
+
+  if (userCompletion.value && addedWord.startsWith(userCompletion.value)) {
+    const length = userCompletion.value.length
+    addedWord = username.substring(length)
+  }
+
   if (!customInputRef.value) return
 
-  customInputRef.value.innerText += username + ' '
+  customInputRef.value.innerText += addedWord + ' '
   innerValue.value = customInputRef.value.innerText
+  showCompletion.value = false
+  createGhostSpan()
+  focusCustomInput()
   // nextTick(() => {
   //   customInputRef.value!.focus()
   // })
@@ -63,7 +97,6 @@ const onSelectOption = (username: string) => {
 const POPUP_WIDTH = 224
 const leftPopup = ref(0)
 const showCompletion = ref(false)
-const ghostRef = ref<HTMLElement | null>(null)
 watch(
   () => innerValue.value,
   (msg, oldMsg) => {
@@ -79,8 +112,9 @@ watch(
 )
 
 const setPopupDimensions = () => {
-  if (!ghostRef.value) return
-  const { left } = ghostRef.value.getBoundingClientRect()
+  const ghostEl = document.querySelector('.ghost-element')
+  if (!ghostEl) return
+  const { left } = ghostEl.getBoundingClientRect()
   if (left + POPUP_WIDTH > window.innerWidth) {
     leftPopup.value = left - POPUP_WIDTH
   } else {
