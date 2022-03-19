@@ -16,7 +16,6 @@
   >
     <!-- <span v-if="innerValue" class="ghost-element"></span> -->
   </div>
-  {{ userCompletion }}
 </template>
 
 <script lang="ts" setup>
@@ -29,9 +28,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const customInputRef = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-  createGhostSpan()
-})
+// onMounted(() => {
+//   createGhostSpan()
+// })
 
 const userCompletion = computed(() => {
   const lastChar = innerValue.value[innerValue.value.length - 1]
@@ -56,8 +55,11 @@ const onInput = (e: Event) => {
 const createGhostSpan = () => {
   const span = document.createElement('span')
   span.classList.add('ghost-element')
-
   customInputRef.value?.appendChild(span)
+}
+const removeGhostSpan = () => {
+  const span = document.querySelector('.ghost-element')
+  span?.remove()
 }
 
 const focusCustomInput = () => {
@@ -75,11 +77,15 @@ const focusCustomInput = () => {
 }
 
 const onSelectOption = (username: string) => {
-  let addedWord = username.toLowerCase()
+  let addedWord = username
 
-  if (userCompletion.value && addedWord.startsWith(userCompletion.value)) {
+  if (userCompletion.value) {
     const length = userCompletion.value.length
-    addedWord = username.substring(length)
+    if (addedWord.toLowerCase().startsWith(userCompletion.value)) {
+      addedWord = username.substring(length)
+    } else {
+      //@e => delete and replace
+    }
   }
 
   if (!customInputRef.value) return
@@ -100,6 +106,13 @@ const showCompletion = ref(false)
 watch(
   () => innerValue.value,
   (msg, oldMsg) => {
+    if (!msg) {
+      removeGhostSpan()
+      return
+    }
+    if (msg && !oldMsg) {
+      createGhostSpan()
+    }
     setPopupDimensions()
 
     if (msg[msg.length - 1] === '@') {
@@ -108,7 +121,8 @@ watch(
     if (msg[msg.length - 1] === ' ' || msg[msg.length - 1] === String.fromCharCode(160)) {
       showCompletion.value = false
     }
-  }
+  },
+  { immediate: true }
 )
 
 const setPopupDimensions = () => {
