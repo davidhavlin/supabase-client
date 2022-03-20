@@ -28,18 +28,20 @@
           :colorClass="colorClass"
           @toggleBlockUser="toggleBlockUser"
         >
-          <div class="font-bold cursor-pointer" :class="colorClass">{{ message.username }}</div>
+          <div class="font-bold cursor-pointer" :class="colorClass">
+            {{ message.username }}
+          </div>
         </chat-user-options>
         <span>:</span>
       </div>
     </div>
-    <span
+    <div
       class="ml-3 inline font-medium text-left tooltip"
-      :class="{ 'align-top': showRemoveIcon }"
+      :class="{ 'align-top': showRemoveIcon, 'bg-slate-800': isUserMentioned }"
       :data-tip="formatedTime"
-    >
-      {{ wordFilter.clean(message.content) }}
-    </span>
+      v-html="serializedContent"
+      @click="onClickTagged"
+    ></div>
   </div>
 </template>
 
@@ -104,4 +106,28 @@ const toggleBlockUser = () => {
 const showRemoveIcon = computed(
   () => msgDeletable.value[props.message.id] || userStore.user?.role === 'ADMIN'
 )
+
+const isUserMentioned = ref(false)
+const serializedContent = computed(() => {
+  const username = userStore.user?.username
+  let content = props.message.content
+  if (username && content.includes(`@${username}`)) {
+    isUserMentioned.value = true
+
+    content = props.message.content.replace(
+      `@${username}`,
+      `<span id="highlight" class="text-slate-800 cursor-pointer bg-primary-def font-bold">@${username}</span>`
+    )
+  }
+
+  return wordFilter.clean(content)
+})
+
+const onClickTagged = (e: Event) => {
+  const span = e.target as HTMLElement
+  if (span && span.id === 'highlight') {
+    const username = span.textContent
+    store.inputMessage += username
+  }
+}
 </script>

@@ -8,6 +8,7 @@ import { IMessage, IMessagesState, TChatMessage } from './message.types'
 export const useMessagesStore = defineStore({
   id: 'messages',
   state: (): IMessagesState => ({
+    inputMessage: '',
     chatMessages: [],
     countAllMessages: 0,
     addedMessages: {},

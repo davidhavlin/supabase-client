@@ -5,6 +5,7 @@ export interface IWelcomeMessage extends TChatMessage {
 }
 
 export interface IMessagesState {
+  inputMessage: string
   chatMessages: (TChatMessage | IWelcomeMessage)[]
   addedMessages: {
     [key: number]: boolean

@@ -34,7 +34,11 @@
       >
         <div class="">
           <MenuItem>
-            <div :class="colorClass" class="block px-4 py-2 text-sm font-bold">
+            <div
+              @click="onClickUser"
+              :class="colorClass"
+              class="block px-4 py-2 text-sm font-bold cursor-pointer"
+            >
               {{ message.username }}
             </div>
           </MenuItem>
@@ -63,9 +67,11 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { useUserStore } from '../../../store/user/user.store'
 import { IMessage } from '../../../store/message/message.types'
 import { onMounted, ref } from 'vue'
+import { useMessagesStore } from '../../../store/message/message.store'
 
 const emit = defineEmits(['toggleBlockUser'])
 const userStore = useUserStore()
+const msgStore = useMessagesStore()
 
 const props = defineProps<{
   message: Required<IMessage>
@@ -82,7 +88,7 @@ const handleClick = () => {
   noSpaceForTooltip.value = top < 100
 }
 
-onMounted(() => {
-  // console.log('user btn ref', userBtnRef.value)
-})
+const onClickUser = () => {
+  msgStore.inputMessage += `@${props.message.username}`
+}
 </script>

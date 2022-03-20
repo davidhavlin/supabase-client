@@ -9,7 +9,7 @@
           <IconChat class="text-white" />
         </div>
         <div class="flex-1">
-          <chat-custom-input v-model="message" />
+          <chat-custom-input v-model="message" @on-send="addMessage" />
         </div>
       </div>
       <div class="flex flex-row justify-between flex-nowrap mt-2 text-slate-700">
@@ -54,7 +54,12 @@ const ui = useUiStore()
 
 const onlineUsersCount = computed(() => (userStore.onlineUsers ? userStore.onlineUsers.length : 0))
 
-const message = ref('')
+const message = computed({
+  get: () => msgStore.inputMessage,
+  set: (val: string) => {
+    msgStore.inputMessage = val
+  },
+})
 
 const disableCounter = computed(() => msgStore.afterMessageCounter)
 

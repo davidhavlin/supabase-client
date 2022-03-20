@@ -1,36 +1,39 @@
 <template>
-  <chat-user-completion
-    v-if="showCompletion"
-    :style="{ left: leftPopup + 'px' }"
-    :userCompletion="userCompletion"
-    @select-option="onSelectOption"
-    @close-popup="showCompletion = false"
-  />
-  <div
-    ref="customInputRef"
-    @input="onInput"
-    class="flex selection:bg-indigo-700 h-full text-left flex-row items-center justify-start w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-transparent focus:bg-slate-800 px-4 py-2 rounded-r focus:shadow-outline outline-none"
-    contenteditable="true"
-    spellcheck="false"
-    placeholder="Odoslať správu"
-  >
-    <!-- <span v-if="innerValue" class="ghost-element"></span> -->
+  <div ref="containerRef" class="relative">
+    <chat-user-completion
+      v-if="showCompletion"
+      :style="{ left: leftPopup + 'px' }"
+      :userCompletion="userCompletion"
+      @select-option="onSelectOption"
+      @close-popup="showCompletion = false"
+    />
+    <div
+      ref="customInputRef"
+      @input="onInput"
+      @keypress.enter.prevent="$emit('onSend')"
+      @focus="focused = true"
+      @blur="focused = false"
+      class="flex selection:bg-indigo-700 h-full text-left flex-row items-center justify-start w-full bg-slate-700 placeholder:text-slate-500 text-white font-bold focus:placeholder:text-transparent focus:bg-slate-800 px-4 py-2 rounded-r focus:shadow-outline outline-none"
+      contenteditable="true"
+      spellcheck="false"
+      placeholder="Odoslať správu"
+    >
+      <!-- <span v-if="innerValue" class="ghost-element"></span> -->
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ChatUserCompletion from '../ChatUserCompletion.vue'
 
 const props = defineProps({
   modelValue: { type: String, required: true },
 })
-const emit = defineEmits(['update:modelValue'])
-const customInputRef = ref<HTMLElement | null>(null)
+const emit = defineEmits(['update:modelValue', 'onSend'])
 
-// onMounted(() => {
-//   createGhostSpan()
-// })
+const containerRef = ref<HTMLElement | null>(null)
+const customInputRef = ref<HTMLElement | null>(null)
 
 const userCompletion = computed(() => {
   const lastChar = innerValue.value[innerValue.value.length - 1]
@@ -77,39 +80,33 @@ const focusCustomInput = () => {
 }
 
 const onSelectOption = (username: string) => {
-  let addedWord = username
+  if (!customInputRef.value) return
+  let sentence = innerValue.value + username
 
   if (userCompletion.value) {
     const length = userCompletion.value.length
-    if (addedWord.toLowerCase().startsWith(userCompletion.value)) {
-      addedWord = username.substring(length)
-    } else {
-      //@e => delete and replace
-    }
+    sentence = innerValue.value.substring(0, innerValue.value.length - length) + username
   }
 
-  if (!customInputRef.value) return
-
-  customInputRef.value.innerText += addedWord + ' '
-  innerValue.value = customInputRef.value.innerText
+  innerValue.value = customInputRef.value.innerText = sentence
   showCompletion.value = false
   createGhostSpan()
   focusCustomInput()
-  // nextTick(() => {
-  //   customInputRef.value!.focus()
-  // })
 }
 
 const POPUP_WIDTH = 224
 const leftPopup = ref(0)
 const showCompletion = ref(false)
+const focused = ref(false)
 watch(
   () => innerValue.value,
   (msg, oldMsg) => {
     if (!msg) {
+      if (customInputRef.value) customInputRef.value.innerText = ''
       removeGhostSpan()
       return
     }
+    if (customInputRef.value && !focused.value) customInputRef.value.innerText = msg
     if (msg && !oldMsg) {
       createGhostSpan()
     }
@@ -126,13 +123,15 @@ watch(
 )
 
 const setPopupDimensions = () => {
+  if (!containerRef.value) return
   const ghostEl = document.querySelector('.ghost-element')
+  const { left: parentLeft } = containerRef.value.getBoundingClientRect()
   if (!ghostEl) return
   const { left } = ghostEl.getBoundingClientRect()
   if (left + POPUP_WIDTH > window.innerWidth) {
-    leftPopup.value = left - POPUP_WIDTH
+    leftPopup.value = left - POPUP_WIDTH - parentLeft
   } else {
-    leftPopup.value = left
+    leftPopup.value = left - parentLeft
   }
 }
 </script>
